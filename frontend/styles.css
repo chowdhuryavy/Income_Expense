@@ -200,3 +200,20 @@ canvas { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,25
 /* Menu micro interactions */
 .menu-item:hover { transform: translateX(2px); }
 .menu-item:active { transform: scale(.98); }
+
+/* Topbar mobile improvements */
+@media (max-width: 900px){
+  .topbar { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+  .search { width: 60%; min-width: 220px; }
+  .search input { width: 100%; min-width: 0; font-size: 14px; }
+  .topbar-actions { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+  .icon-btn, .select { width: 100%; }
+}
+
+/* Mobile card/table spacing */
+@media (max-width: 900px){
+  .cards { gap: 10px; }
+  .card { padding: 12px; }
+  .charts-grid { gap: 10px; }
+  canvas { height: 180px; }
+}

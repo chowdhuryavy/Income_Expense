@@ -197,9 +197,24 @@ $('#saveLentBorrowed').addEventListener('click', async ()=>{
 });
 
 // View buttons
-$('#btnViewIncome').addEventListener('click', async (e)=> { e.stopPropagation(); location.hash = 'income'; try { await renderTable('Income', '#incomeTableWrap'); } catch {} });
-$('#btnViewExpense').addEventListener('click', async (e)=> { e.stopPropagation(); location.hash = 'expense'; try { await renderTable('Expense', '#expenseTableWrap'); } catch {} });
-$('#btnViewLentBorrowed').addEventListener('click', async (e)=> { e.stopPropagation(); location.hash = 'lentborrowed'; try { await renderTable('LentBorrowed', '#lentBorrowedTableWrap'); } catch {} });
+const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.addEventListener('click', async (e)=> {
+  e.stopPropagation();
+  location.hash = 'income';
+  navigateTo('income');
+  await renderTable('Income', '#incomeTableWrap');
+});
+const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.addEventListener('click', async (e)=> {
+  e.stopPropagation();
+  location.hash = 'expense';
+  navigateTo('expense');
+  await renderTable('Expense', '#expenseTableWrap');
+});
+const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.addEventListener('click', async (e)=> {
+  e.stopPropagation();
+  location.hash = 'lentborrowed';
+  navigateTo('lentborrowed');
+  await renderTable('LentBorrowed', '#lentBorrowedTableWrap');
+});
 
 async function renderTable(table, wrapSelector){
   const wrap = $(wrapSelector); wrap.classList.remove('hidden');
