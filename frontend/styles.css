@@ -162,8 +162,8 @@ canvas { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,25
 .select:focus, .input:focus, .textarea:focus { border-color: var(--primary-2); box-shadow: 0 0 0 2px rgba(0,210,255,0.15); }
 .textarea { resize: vertical; }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity .2s ease; }
-.modal { position: fixed; left: 50%; top: 52%; transform: translate(-50%, -40%) scale(.96); width: min(520px, 92vw); background: var(--surface); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; box-shadow: var(--card-glow); opacity: 0; pointer-events: none; transition: transform .2s ease, opacity .2s ease; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 900; }
+.modal { position: fixed; left: 50%; top: 52%; transform: translate(-50%, -40%) scale(.96); width: min(520px, 92vw); background: var(--surface); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; box-shadow: var(--card-glow); opacity: 0; pointer-events: none; transition: transform .2s ease, opacity .2s ease; z-index: 1000; }
 .modal.show { opacity: 1; transform: translate(-50%, -52%) scale(1); pointer-events: all; }
 .modal-overlay.show { opacity: 1; pointer-events: all; }
 .modal-header, .modal-footer { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; }

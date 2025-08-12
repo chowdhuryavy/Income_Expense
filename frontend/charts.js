@@ -9,6 +9,8 @@ function baseChartOptions() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { labels: { color: textColor, font: { size: 10 } } } },
+    layout: { padding: 4 },
+    backgroundColor: 'transparent',
     scales: {
       x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
       y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } }

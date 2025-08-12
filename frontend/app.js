@@ -61,6 +61,7 @@ routes.forEach(btn => btn.addEventListener('click', async (e) => {
   const route = btn.getAttribute('data-route');
   location.hash = route; // triggers hashchange + navigate
   setSidebarExpanded(false);
+  closeModals();
   try {
     if (route === 'income') await renderTable('Income', '#incomeTableWrap');
     if (route === 'expense') await renderTable('Expense', '#expenseTableWrap');
