@@ -134,8 +134,14 @@ function renderTransferInline(){
 // Modals
 const modals = $$('.modal');
 const overlay = $('#modalOverlay');
-function openModal(id){ overlay.classList.add('show'); $(id).classList.add('show'); }
-function closeModals(){ overlay.classList.remove('show'); modals.forEach(m => m.classList.remove('show')); }
+function openModal(id){
+  if (overlay) { overlay.classList.remove('hidden'); overlay.classList.add('show'); }
+  const el = $(id); if (el) { el.classList.remove('hidden'); el.classList.add('show'); }
+}
+function closeModals(){
+  if (overlay) { overlay.classList.remove('show'); overlay.classList.add('hidden'); }
+  modals.forEach(m => { m.classList.remove('show'); m.classList.add('hidden'); });
+}
 overlay.addEventListener('click', closeModals);
 $$('.modal .modal-close').forEach(btn => btn.addEventListener('click', closeModals));
 
