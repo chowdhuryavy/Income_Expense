@@ -316,9 +316,18 @@ $$('.filters .chip').forEach(chip => chip.addEventListener('click', () => {
   $$('.filters .chip').forEach(c => c.classList.remove('active')); chip.classList.add('active'); refreshCharts(chip.dataset.filter);
 }));
 
+function bindActionButtons(){
+  const addIncomeBtn = $('#btnAddIncome'); if (addIncomeBtn) addIncomeBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); $('#incDate').value = todayISO(); populateAccountSelect($('#incAccountSelect')); toggleCurrencyRow('inc'); openModal('#modalIncome'); };
+  const addExpenseBtn = $('#btnAddExpense'); if (addExpenseBtn) addExpenseBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'expense'; navigateTo('expense'); $('#expDate').value = todayISO(); populateAccountSelect($('#expAccountSelect')); toggleCurrencyRow('exp'); openModal('#modalExpense'); };
+  const addAccountBtn = $('#btnAddAccount'); if (addAccountBtn) addAccountBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'accounts'; navigateTo('accounts'); openModal('#modalAccount'); };
+  const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); await renderTable('Income', '#incomeTableWrap'); };
+  const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'expense'; navigateTo('expense'); await renderTable('Expense', '#expenseTableWrap'); };
+  const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'lentborrowed'; navigateTo('lentborrowed'); await renderTable('LentBorrowed', '#lentBorrowedTableWrap'); };
+}
+
 window.addEventListener('DOMContentLoaded', async ()=>{
   initCharts();
-  // initial route
   navigateTo(location.hash.replace('#','') || 'dashboard');
+  bindActionButtons();
   try { await refreshAll(); } catch (e) { console.error(e); alert('Configure API URL in frontend/api.js and deploy Apps Script Web App.'); }
 });
