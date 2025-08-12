@@ -70,9 +70,9 @@ routes.forEach(btn => btn.addEventListener('click', async (e) => {
 
 // Topbar theme and language
 const themeToggle = $('#themeToggle');
-themeToggle.addEventListener('click', () => toggleTheme());
-$('#languageSelect').addEventListener('change', (e) => { setLanguage(e.target.value); });
-$('#currencySymbolSelect').addEventListener('change', (e) => { state.settings.currencySymbol = e.target.value; saveSettings(); updateCards(); });
+if (themeToggle) themeToggle.addEventListener('click', () => toggleTheme());
+const langSel = $('#languageSelect'); if (langSel) langSel.addEventListener('change', (e) => { setLanguage(e.target.value); });
+const currSel = $('#currencySymbolSelect'); if (currSel) currSel.addEventListener('change', (e) => { state.settings.currencySymbol = e.target.value; saveSettings(); updateCards(); });
 
 function toggleTheme(target){
   const isLight = document.body.classList.toggle('theme-light');
@@ -240,8 +240,7 @@ function openExpenseModal(){ $('#expDate').value = todayISO(); populateAccountSe
 const addIncomeBtn = $('#btnAddIncome'); if (addIncomeBtn) addIncomeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); openIncomeModal(); });
 const addExpenseBtn = $('#btnAddExpense'); if (addExpenseBtn) addExpenseBtn.addEventListener('click', (e)=>{ e.stopPropagation(); location.hash = 'expense'; navigateTo('expense'); openExpenseModal(); });
 const addAccountBtn = $('#btnAddAccount'); if (addAccountBtn) addAccountBtn.addEventListener('click', (e)=>{ e.stopPropagation(); location.hash = 'accounts'; openModal('#modalAccount'); });
-// removed transfer modal open
-$('#btnAddLentBorrowed').addEventListener('click', ()=> openModal('#modalLentBorrowed'));
+const addLBBtn = $('#btnAddLentBorrowed'); if (addLBBtn) addLBBtn.addEventListener('click', ()=> openModal('#modalLentBorrowed'));
 
 function toggleCurrencyRow(prefix){
   const show = state.settings.multiCurrency;
@@ -252,7 +251,7 @@ function toggleCurrencyRow(prefix){
 function resetIncomeForm(){ $('#incAmount').value=''; $('#incNotes').value=''; $('#incCategorySelect').selectedIndex=0; $('#incAccountSelect').selectedIndex=0; }
 function resetExpenseForm(){ $('#expAmount').value=''; $('#expNotes').value=''; $('#expCategorySelect').selectedIndex=0; $('#expAccountSelect').selectedIndex=0; }
 
-$('#saveIncome').addEventListener('click', async ()=>{
+const saveIncomeBtn = $('#saveIncome'); if (saveIncomeBtn) saveIncomeBtn.addEventListener('click', async ()=>{
   const row = {
     Date: $('#incDate').value,
     Amount: Number($('#incAmount').value||0),
@@ -263,7 +262,7 @@ $('#saveIncome').addEventListener('click', async ()=>{
   };
   await api.addIncome(row); await refreshAll(); resetIncomeForm(); closeModals();
 });
-$('#saveExpense').addEventListener('click', async ()=>{
+const saveExpenseBtn = $('#saveExpense'); if (saveExpenseBtn) saveExpenseBtn.addEventListener('click', async ()=>{
   const row = {
     Date: $('#expDate').value,
     Amount: Number($('#expAmount').value||0),
@@ -276,12 +275,12 @@ $('#saveExpense').addEventListener('click', async ()=>{
 });
 
 // Save Account includes card details
-$('#saveAccount').addEventListener('click', async ()=>{
+const saveAccountBtn = $('#saveAccount'); if (saveAccountBtn) saveAccountBtn.addEventListener('click', async ()=>{
   const row = { AccountName: $('#accName').value, Type: $('#accType').value, Balance: Number($('#accInitialBalance').value||0), 'Card Number': $('#accCardNumber').value, 'Issuer': $('#accIssuer').value };
   await api.addAccount(row); await refreshAll(); closeModals();
 });
 
-$('#submitTransferInline').addEventListener('click', async ()=>{
+const submitTransferBtn = $('#submitTransferInline'); if (submitTransferBtn) submitTransferBtn.addEventListener('click', async ()=>{
   const row = {
     FromAccount: $('#trFromSelect').value,
     ToAccount: $('#trToSelect').value,
@@ -293,7 +292,7 @@ $('#submitTransferInline').addEventListener('click', async ()=>{
   await api.addTransfer(row); await refreshAll();
 });
 
-$('#saveLentBorrowed').addEventListener('click', async ()=>{
+const saveLBBtn = $('#saveLentBorrowed'); if (saveLBBtn) saveLBBtn.addEventListener('click', async ()=>{
   const row = { Name: $('#lbName').value, Amount: Number($('#lbAmount').value||0), Date: $('#lbDate').value, Type: $('#lbType').value, Notes: $('#lbNotes').value };
   await api.addLentBorrowed(row); await refreshAll(); closeModals();
 });
@@ -385,10 +384,10 @@ $('#settingsBaseCurrency').addEventListener('change', e => { state.settings.base
 $('#settingsCategories').addEventListener('input', debounce(e => { try { state.settings.categories = JSON.parse(e.target.value); saveSettings(); } catch {} }, 600));
 $('#settingsAccountTypes').addEventListener('input', e => { state.settings.accountTypes = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); saveSettings(); });
 
-$('#btnExportJSON').addEventListener('click', async ()=>{
+const btnExportJSON = $('#btnExportJSON'); if (btnExportJSON) btnExportJSON.addEventListener('click', async ()=>{
   const data = await api.exportBackup(); download(`backup-${Date.now()}.json`, JSON.stringify(data, null, 2));
 });
-$('#btnExportCSV').addEventListener('click', async ()=>{
+const btnExportCSV = $('#btnExportCSV'); if (btnExportCSV) btnExportCSV.addEventListener('click', async ()=>{
   const data = await api.exportBackup();
   const csv = Object.entries(data).map(([name, rows]) => {
     const headers = rows.length ? Object.keys(rows[0]) : [];
@@ -397,11 +396,11 @@ $('#btnExportCSV').addEventListener('click', async ()=>{
   }).join('\n\n');
   download(`backup-${Date.now()}.csv`, csv, 'text/csv');
 });
-$('#btnExportXLSX').addEventListener('click', async ()=>{
+const btnExportXLSX = $('#btnExportXLSX'); if (btnExportXLSX) btnExportXLSX.addEventListener('click', async ()=>{
   const data = await api.exportBackup(); download(`backup-${Date.now()}.json`, JSON.stringify(data, null, 2));
 });
 
-$('#btnImportCSV').addEventListener('click', async ()=>{
+const btnImportCSV = $('#btnImportCSV'); if (btnImportCSV) btnImportCSV.addEventListener('click', async ()=>{
   const file = $('#inputImportCSV').files?.[0]; if (!file) return;
   const text = await file.text(); const rows = parseCSV(text);
   const target = $('#importTarget').value;
@@ -409,10 +408,10 @@ $('#btnImportCSV').addEventListener('click', async ()=>{
   await refreshAll();
 });
 
-$('#btnDataReset').addEventListener('click', async ()=>{ if (!confirm('Clear all transactions?')) return; await api.resetData(); await refreshAll(); });
+const btnDataReset = $('#btnDataReset'); if (btnDataReset) btnDataReset.addEventListener('click', async ()=>{ if (!confirm('Clear all transactions?')) return; await api.resetData(); await refreshAll(); });
 
 // Global search
-$('#globalSearch').addEventListener('input', debounce(e => {
+const globalSearch = $('#globalSearch'); if (globalSearch) globalSearch.addEventListener('input', debounce(e => {
   const q = (e.target.value||'').toLowerCase();
   $$('.table-wrap table tbody tr').forEach(tr => {
     const text = tr.textContent.toLowerCase(); tr.style.display = text.includes(q) ? '' : 'none';
@@ -434,8 +433,8 @@ function applySettingsToUI(){
   const s = state.settings;
   document.body.classList.toggle('theme-light', s.theme === 'light');
   document.body.classList.toggle('theme-dark', s.theme !== 'light');
-  $('#languageSelect').value = s.language; translatePage(s.language);
-  $('#currencySymbolSelect').value = s.currencySymbol;
+  if (langSel) langSel.value = s.language; translatePage(s.language);
+  if (currSel) currSel.value = s.currencySymbol;
   $('#settingsLanguage').value = s.language;
   $('#settingsCurrencySymbol').value = s.currencySymbol;
   $('#settingsDateFormat').value = s.dateFormat;
