@@ -10,18 +10,18 @@ const overlayEl = $('#screenOverlay');
 const btnSidebarToggle = $('#btnSidebarToggle');
 function setSidebarExpanded(expanded){
   if (expanded){
-    sidebar.classList.remove('mini');
+    sidebar.classList.remove('collapsed');
     document.body.classList.add('sidebar-open');
     if (overlayEl) overlayEl.classList.add('show');
   } else {
-    sidebar.classList.add('mini');
+    sidebar.classList.add('collapsed');
     document.body.classList.remove('sidebar-open');
     if (overlayEl) overlayEl.classList.remove('show');
   }
 }
 if (btnSidebarToggle) btnSidebarToggle.addEventListener('click', (e) => {
   e.stopPropagation();
-  const expanded = sidebar.classList.contains('mini');
+  const expanded = sidebar.classList.contains('collapsed');
   setSidebarExpanded(expanded);
 });
 
