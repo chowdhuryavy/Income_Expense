@@ -7,15 +7,23 @@ import { initCharts, refreshCharts, refreshChartTheme } from './charts.js';
 // Sidebar toggle
 const sidebar = $('#sidebar');
 $('#btnToggleSidebar').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+const btnToggleSidebarTop = $('#btnToggleSidebarTop');
+if (btnToggleSidebarTop) btnToggleSidebarTop.addEventListener('click', () => sidebar.classList.remove('collapsed'));
 
 // Routing
 const routes = $$('.menu-item');
-routes.forEach(btn => btn.addEventListener('click', () => {
+routes.forEach(btn => btn.addEventListener('click', async () => {
   routes.forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const route = btn.getAttribute('data-route');
   $$('.route').forEach(sec => sec.classList.remove('active'));
-  $(`#route-${route}`).classList.add('active');
+  const target = `#route-${route}`;
+  const section = document.querySelector(target); if (section) section.classList.add('active');
+  if (window.innerWidth <= 900) sidebar.classList.add('collapsed');
+  // auto-load views when entering sections
+  if (route === 'income') await renderTable('Income', '#incomeTableWrap');
+  if (route === 'expense') await renderTable('Expense', '#expenseTableWrap');
+  if (route === 'lentborrowed') await renderTable('LentBorrowed', '#lentBorrowedTableWrap');
 }));
 
 // Topbar theme and language
@@ -147,9 +155,9 @@ $('#saveLentBorrowed').addEventListener('click', async ()=>{
 });
 
 // View buttons
-$('#btnViewIncome').addEventListener('click', async ()=> renderTable('Income', '#incomeTableWrap'));
-$('#btnViewExpense').addEventListener('click', async ()=> renderTable('Expense', '#expenseTableWrap'));
-$('#btnViewLentBorrowed').addEventListener('click', async ()=> renderTable('LentBorrowed', '#lentBorrowedTableWrap'));
+$('#btnViewIncome').addEventListener('click', async ()=> { await renderTable('Income', '#incomeTableWrap'); document.querySelector('#route-income').classList.add('active'); });
+$('#btnViewExpense').addEventListener('click', async ()=> { await renderTable('Expense', '#expenseTableWrap'); document.querySelector('#route-expense').classList.add('active'); });
+$('#btnViewLentBorrowed').addEventListener('click', async ()=> { await renderTable('LentBorrowed', '#lentBorrowedTableWrap'); document.querySelector('#route-lentborrowed').classList.add('active'); });
 
 async function renderTable(table, wrapSelector){
   const wrap = $(wrapSelector); wrap.classList.remove('hidden');

@@ -38,6 +38,7 @@
 
     <main class="main">
       <header class="topbar">
+        <button id="btnToggleSidebarTop" class="icon-btn only-mobile" aria-label="Open Menu"><i class="fa-solid fa-bars"></i></button>
         <div class="search">
           <i class="fa-solid fa-magnifying-glass"></i>
           <input id="globalSearch" type="search" placeholder="Search..." data-i18n-placeholder="placeholder_search" />
@@ -69,11 +70,11 @@
 
       <section id="route-dashboard" class="route active">
         <div class="cards">
-          <div class="card"><div class="card-title" data-i18n="card_total_balance">Total Balance</div><div id="totalBalance" class="card-value">0</div></div>
-          <div class="card"><div class="card-title" data-i18n="card_total_income">Total Income</div><div id="totalIncome" class="card-value">0</div></div>
-          <div class="card"><div class="card-title" data-i18n="card_total_expense">Total Expense</div><div id="totalExpense" class="card-value">0</div></div>
-          <div class="card"><div class="card-title" data-i18n="card_cash_balance">Cash Balance</div><div id="cashBalance" class="card-value">0</div></div>
-          <div class="card"><div class="card-title" data-i18n="card_credit_balance">Credit Card Balance</div><div id="creditBalance" class="card-value">0</div></div>
+          <div class="card total animate-card"><div class="card-title"><i class="fa-solid fa-sack-dollar"></i> <span data-i18n="card_total_balance">Total Balance</span></div><div id="totalBalance" class="card-value">0</div></div>
+          <div class="card income animate-card"><div class="card-title"><i class="fa-solid fa-arrow-trend-up"></i> <span data-i18n="card_total_income">Total Income</span></div><div id="totalIncome" class="card-value">0</div></div>
+          <div class="card expense animate-card"><div class="card-title"><i class="fa-solid fa-arrow-trend-down"></i> <span data-i18n="card_total_expense">Total Expense</span></div><div id="totalExpense" class="card-value">0</div></div>
+          <div class="card cash animate-card"><div class="card-title"><i class="fa-solid fa-money-bill-wave"></i> <span data-i18n="card_cash_balance">Cash Balance</span></div><div id="cashBalance" class="card-value">0</div></div>
+          <div class="card credit animate-card"><div class="card-title"><i class="fa-solid fa-credit-card"></i> <span data-i18n="card_credit_balance">Credit Card Balance</span></div><div id="creditBalance" class="card-value">0</div></div>
         </div>
         <div class="filters">
           <button class="chip active" data-filter="this_month" data-i18n="filter_this_month">This Month</button>
