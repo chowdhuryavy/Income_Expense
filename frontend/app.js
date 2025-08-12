@@ -477,9 +477,26 @@ function bindActionButtons(){
   const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'lentborrowed'; navigateTo('lentborrowed'); openIncomeModal(); };
 }
 
+function showLoading(target){ if (!target) return; target.innerHTML = '<div style="padding:12px; opacity:.8;">Loading...</div>'; }
+let requestLock = false;
+async function guarded(fn){ if (requestLock) return; requestLock = true; try { await fn(); } finally { requestLock = false; } }
+
+// Bind action cards
+function bindActionCards(){
+  const addInc = $('#cardAddIncome'); if (addInc) addInc.onclick = ()=> openIncomeModal();
+  const viewInc = $('#cardViewIncome'); if (viewInc) viewInc.onclick = ()=> guarded(async ()=>{ const wrap = $('#incomeTableWrap'); showLoading(wrap); await renderTable('Income', '#incomeTableWrap'); renderFilters('#incomeFilters','Income'); });
+  const addExp = $('#cardAddExpense'); if (addExp) addExp.onclick = ()=> openExpenseModal();
+  const viewExp = $('#cardViewExpense'); if (viewExp) viewExp.onclick = ()=> guarded(async ()=>{ const wrap = $('#expenseTableWrap'); showLoading(wrap); await renderTable('Expense', '#expenseTableWrap'); renderFilters('#expenseFilters','Expense'); });
+  const addAcc = $('#cardAddAccount'); if (addAcc) addAcc.onclick = ()=> openModal('#modalAccount');
+  const viewAcc = $('#cardViewAccounts'); if (viewAcc) viewAcc.onclick = ()=> guarded(async ()=>{ /* Accounts already visible as cards; future table view can be added */ });
+  const addLB = $('#cardAddLB'); if (addLB) addLB.onclick = ()=> openModal('#modalLentBorrowed');
+  const viewLB = $('#cardViewLB'); if (viewLB) viewLB.onclick = ()=> guarded(async ()=>{ const wrap = $('#lentBorrowedTableWrap'); showLoading(wrap); await renderTable('LentBorrowed', '#lentBorrowedTableWrap'); renderFilters('#lentBorrowedFilters','LentBorrowed'); });
+}
+
 window.addEventListener('DOMContentLoaded', async ()=>{
   initCharts();
   navigateTo(location.hash.replace('#','') || 'dashboard');
   bindActionButtons();
+  bindActionCards();
   try { await refreshAll(); } catch (e) { console.error(e); alert('Configure API URL in frontend/api.js and deploy Apps Script Web App.'); }
 });
