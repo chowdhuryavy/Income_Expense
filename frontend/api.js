@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://script.google.com/macros/s/AKfycbxlMJIFbe2BfU0GzYEQJc9vH4ZCM4upQB8qaycKyZ_Mo79HUdVFtZKvmtU1p3nEshuh/exec"; // provided deployment URL
+let API_BASE_URL = "https://script.google.com/macros/s/AKfycbxlMJIFbe2BfU0GzYEQJc9vH4ZCM4upQB8qaycKyZ_Mo79HUdVFtZKvmtU1p3nEshuh/exec"; // provided deployment URL
 
 function ensureUrl(){
   if (!API_BASE_URL || API_BASE_URL.includes("YOUR_DEPLOYED")) throw new Error("Configure API_BASE_URL in frontend/api.js");
@@ -45,5 +45,5 @@ export const api = {
 };
 
 export function setApiBaseUrl(url){
-  // Allows runtime override
+  if (typeof url === 'string' && url.startsWith('http')) API_BASE_URL = url;
 }
