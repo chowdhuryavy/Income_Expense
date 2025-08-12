@@ -235,3 +235,15 @@ canvas { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,25
 @media (max-width: 900px){
   .charts-grid { grid-template-columns: 1fr; }
 }
+
+/* Premium card glow and hover */
+.card { position: relative; overflow: hidden; }
+.card::after { content: ""; position: absolute; inset: -40%; background: radial-gradient(600px 300px at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.06), transparent 60%); pointer-events: none; transition: opacity .3s; opacity: 0; }
+.card:hover::after { opacity: 1; }
+.card { transition: transform .25s ease, box-shadow .25s ease; }
+.card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(0,210,255,0.25); }
+
+/* Table toolbar */
+.table-toolbar { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border-radius: 12px 12px 0 0; }
+.table-toolbar .spacer { flex: 1; }
+.table-title { color: var(--text-dim); font-weight: 600; }

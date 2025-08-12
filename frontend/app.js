@@ -40,8 +40,9 @@ window.addEventListener('click', (e) => {
 // Simple hash router
 function navigateTo(route){
   if (!route) route = 'dashboard';
-  routes.forEach(b => b.classList.remove('active'));
-  const match = Array.from(routes).find(b => b.getAttribute('data-route') === route);
+  const routeBtns = $$('.menu-item');
+  routeBtns.forEach(b => b.classList.remove('active'));
+  const match = routeBtns.find(b => b.getAttribute('data-route') === route);
   if (match) match.classList.add('active');
   $$('.route').forEach(sec => sec.classList.remove('active'));
   const section = document.querySelector(`#route-${route}`);
@@ -229,17 +230,21 @@ async function renderTable(table, wrapSelector){
   try { data = await api.getTable(table); } catch (e){ console.error('Failed to load table', table, e); wrap.innerHTML = `<div style="padding:12px;">Failed to load ${table}</div>`; return; }
   const rows = data.rows || [];
   const headers = rows.length ? Object.keys(rows[0]).filter(h => h !== '_row') : [];
+  const toolbar = `<div class="table-toolbar"><button class="btn small" data-back><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button><div class="spacer"></div><div class="table-title">${table}</div></div>`;
   const html = `
+    ${toolbar}
     <table class="table">
       <thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}<th>Actions</th></tr></thead>
       <tbody>
         ${rows.map(r => `<tr data-row="${r._row}">${headers.map(h=>`<td data-key="${h}">${r[h]??''}</td>`).join('')}<td>
-          <button class="btn small" data-edit>Edit</button>
-          <button class="btn danger small" data-delete>Delete</button>
+          <button class="btn small" data-edit><i class="fa-solid fa-pen"></i> Edit</button>
+          <button class="btn danger small" data-delete><i class="fa-solid fa-trash"></i> Delete</button>
         </td></tr>`).join('')}
       </tbody>
     </table>`;
   wrap.innerHTML = html;
+  const backBtn = wrap.querySelector('[data-back]');
+  if (backBtn) backBtn.addEventListener('click', () => { location.hash = 'dashboard'; navigateTo('dashboard'); });
   wrap.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', async (e) => {
     const tr = e.target.closest('tr'); const row = Number(tr.getAttribute('data-row'));
     if (!confirm('Delete this row?')) return;
@@ -256,7 +261,6 @@ async function renderTable(table, wrapSelector){
       populateAccountSelect($('#incAccountSelect')); $('#incAccountSelect').value = getVal('Account');
       $('#incNotes').value = getVal('Notes');
       openModal('#modalIncome');
-      // saving will overwrite as a new row; for true update, call updateRow after save
     } else if (table === 'Expense'){
       location.hash = 'expense'; navigateTo('expense');
       $('#expDate').value = getVal('Date');
