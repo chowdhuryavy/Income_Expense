@@ -443,13 +443,28 @@ const globalSearch = $('#globalSearch'); if (globalSearch) globalSearch.addEvent
 
 // Init
 async function refreshAll(){
-  const data = await api.getAllData();
-  setAllData(data);
-  applySettingsToUI();
-  updateCards();
-  renderAccounts();
-  renderTransferInline();
-  refreshCharts($('.chip.active')?.dataset.filter || 'this_month');
+  try {
+    const data = await api.getAllData();
+    setAllData(data);
+    applySettingsToUI();
+    updateCards();
+    renderAccounts();
+    renderTransferInline();
+    refreshCharts($('.chip.active')?.dataset.filter || 'this_month');
+  } catch (e){
+    console.error('Failed to fetch data', e);
+    const dash = document.querySelector('#route-dashboard');
+    if (dash){
+      const id = 'api-error';
+      if (!document.getElementById(id)){
+        const div = document.createElement('div'); div.id = id;
+        div.style.cssText = 'margin:10px 0;padding:10px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,0,0,.1)';
+        div.innerHTML = 'Cannot reach backend. <button id="btnSetApiUrl" class="btn small" style="margin-left:8px;">Set API URL</button>';
+        dash.prepend(div);
+        const btn = div.querySelector('#btnSetApiUrl'); if (btn) btn.onclick = ()=>{ const url = prompt('Enter Web App URL (ends with /exec)'); if (url) { try { import('./api.js').then(m => m.setApiBaseUrl(url)); location.reload(); } catch {} } };
+      }
+    }
+  }
 }
 
 function applySettingsToUI(){
