@@ -6,16 +6,26 @@ import { initCharts, refreshCharts, refreshChartTheme } from './charts.js';
 
 // Sidebar toggle
 const sidebar = $('#sidebar');
+const overlayEl = $('#screenOverlay');
 const btnSidebarToggle = $('#btnSidebarToggle');
-if (btnSidebarToggle) btnSidebarToggle.addEventListener('click', (e) => {
-  e.stopPropagation();
-  // Toggle between expanded and mini
-  if (sidebar.classList.contains('mini')) {
+function setSidebarExpanded(expanded){
+  if (expanded){
     sidebar.classList.remove('mini');
+    document.body.classList.add('sidebar-open');
+    if (overlayEl) overlayEl.classList.add('show');
   } else {
     sidebar.classList.add('mini');
+    document.body.classList.remove('sidebar-open');
+    if (overlayEl) overlayEl.classList.remove('show');
   }
+}
+if (btnSidebarToggle) btnSidebarToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const expanded = sidebar.classList.contains('mini');
+  setSidebarExpanded(expanded);
 });
+
+if (overlayEl) overlayEl.addEventListener('click', () => setSidebarExpanded(false));
 
 // Collapse to mini when clicking outside sidebar and topbar
 window.addEventListener('click', (e) => {
@@ -23,7 +33,7 @@ window.addEventListener('click', (e) => {
   const isInsideSidebar = sidebar.contains(e.target);
   const isInsideTopbar = topbar && topbar.contains(e.target);
   if (!isInsideSidebar && !isInsideTopbar) {
-    sidebar.classList.add('mini');
+    setSidebarExpanded(false);
   }
 });
 
@@ -49,7 +59,7 @@ routes.forEach(btn => btn.addEventListener('click', async (e) => {
   e.stopPropagation();
   const route = btn.getAttribute('data-route');
   location.hash = route; // triggers hashchange + navigate
-  sidebar.classList.add('mini');
+  setSidebarExpanded(false);
   try {
     if (route === 'income') await renderTable('Income', '#incomeTableWrap');
     if (route === 'expense') await renderTable('Expense', '#expenseTableWrap');

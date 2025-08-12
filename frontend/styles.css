@@ -36,6 +36,27 @@ body {
 
 #app { display: flex; min-height: 100vh; }
 
+/* Content offset for desktop expanded sidebar */
+@media (min-width: 901px){
+  .sidebar { position: sticky; top: 0; align-self: flex-start; height: 100vh; }
+  .sidebar + .screen-overlay { display: none; }
+}
+
+/* Screen overlay for mobile */
+.screen-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); backdrop-filter: blur(1px); opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 40; }
+.screen-overlay.show { opacity: 1; pointer-events: all; }
+
+/* Layering */
+.sidebar { z-index: 50; }
+.topbar { z-index: 30; position: sticky; top: 0; }
+.main { position: relative; flex: 1; }
+
+/* Mobile sidebar behavior */
+@media (max-width: 900px){
+  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; }
+  body.sidebar-open .screen-overlay { opacity: 1; pointer-events: all; }
+}
+
 .sidebar {
   width: 280px;
   background: linear-gradient(180deg, var(--surface), var(--surface-2));
