@@ -97,6 +97,7 @@
             <button id="btnViewIncome" class="btn"><i class="fa-solid fa-table"></i><span data-i18n="btn_view">View</span></button>
           </div>
         </div>
+        <div id="incomeFilters" class="filters hidden"></div>
         <div id="incomeTableWrap" class="table-wrap hidden"></div>
       </section>
 
@@ -108,6 +109,7 @@
             <button id="btnViewExpense" class="btn"><i class="fa-solid fa-table"></i><span data-i18n="btn_view">View</span></button>
           </div>
         </div>
+        <div id="expenseFilters" class="filters hidden"></div>
         <div id="expenseTableWrap" class="table-wrap hidden"></div>
       </section>
 
@@ -152,6 +154,7 @@
             <button id="btnViewLentBorrowed" class="btn"><i class="fa-solid fa-table"></i><span data-i18n="btn_view">View</span></button>
           </div>
         </div>
+        <div id="lentBorrowedFilters" class="filters hidden"></div>
         <div id="lentBorrowedTableWrap" class="table-wrap hidden"></div>
       </section>
 
@@ -309,8 +312,11 @@
           <option>Bank</option>
           <option>Cash</option>
           <option>Credit Card</option>
+          <option>Debit Card</option>
         </select>
         <input id="accInitialBalance" type="number" step="0.01" class="input" placeholder="Initial Balance" data-i18n-placeholder="placeholder_initial_balance" />
+        <input id="accCardNumber" class="input" placeholder="Card Number (optional)" />
+        <input id="accIssuer" class="input" placeholder="Issuer/Bank (optional)" />
       </div>
     </div>
     <div class="modal-footer">

@@ -11,7 +11,7 @@ const SHEETS = {
 const REQUIRED_HEADERS = {
   Income: ['Date','Amount','Category','Account','Notes','Currency','Rate'],
   Expense: ['Date','Amount','Category','Account','Notes','Currency','Rate'],
-  Accounts: ['Account Name','Type','Balance'],
+  Accounts: ['Account Name','Type','Balance','Card Number','Issuer'],
   Transfer: ['From Account','To Account','Amount','Date','Notes','Currency','Rate'],
   LentBorrowed: ['Name','Amount','Date','Type','Notes'],
   Settings: ['Key','Value']
@@ -173,8 +173,8 @@ function _getAll(){
 function addAccount(row){
   // Expect: { AccountName, Type, Balance }
   const name = row.AccountName; if (!name) throw new Error('AccountName required');
-  const sh = _ss().getSheetByName(SHEETS.Accounts);
-  _appendRow(SHEETS.Accounts, { 'Account Name': name, 'Type': row.Type||'Bank', 'Balance': Number(row.Balance||0) });
+  const record = { 'Account Name': name, 'Type': row.Type||'Bank', 'Balance': Number(row.Balance||0), 'Card Number': row['Card Number']||'', 'Issuer': row['Issuer']||'' };
+  _appendRow(SHEETS.Accounts, record);
   return { ok: true };
 }
 

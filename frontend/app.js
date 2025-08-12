@@ -104,6 +104,53 @@ function iconForAccountType(type){
   return 'fa-wallet';
 }
 
+function formatLocalDate(dStr){
+  if (!dStr) return '';
+  const d = new Date(dStr);
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+// Filters
+function renderFilters(containerSelector, table){
+  const el = $(containerSelector); if (!el) return;
+  el.classList.remove('hidden');
+  el.innerHTML = `
+    <input type="date" class="input" data-filter-from />
+    <input type="date" class="input" data-filter-to />
+    <input type="search" class="input" placeholder="Search" data-filter-q />
+    <button class="btn small" data-apply><i class="fa-solid fa-filter"></i> Apply</button>
+    <button class="btn small" data-clear><i class="fa-solid fa-eraser"></i> Clear</button>`;
+  const apply = async ()=>{
+    const from = el.querySelector('[data-filter-from]').value;
+    const to = el.querySelector('[data-filter-to]').value;
+    const q = (el.querySelector('[data-filter-q]').value||'').toLowerCase();
+    const wrapSelector = table==='Income' ? '#incomeTableWrap' : table==='Expense' ? '#expenseTableWrap' : '#lentBorrowedTableWrap';
+    const wrap = $(wrapSelector);
+    // fetch fresh and filter on client
+    const { rows } = await api.getTable(table);
+    const filtered = rows.filter(r => {
+      // date
+      const d = new Date(r.Date);
+      const inRange = (!from || d >= new Date(from)) && (!to || d <= new Date(to));
+      const hay = JSON.stringify(r).toLowerCase();
+      const match = !q || hay.includes(q);
+      return inRange && match;
+    });
+    wrap.querySelector('tbody').innerHTML = filtered.map(r => {
+      const headers = Object.keys(r).filter(h=>h!=='_row');
+      return `<tr data-row="${r._row}">${headers.map(h=>`<td data-key="${h}">${h==='Date'?formatLocalDate(r[h]):(r[h]??'')}</td>`).join('')}<td>
+        <button class="btn small" data-edit><i class="fa-solid fa-pen"></i> Edit</button>
+        <button class="btn danger small" data-delete><i class="fa-solid fa-trash"></i> Delete</button>
+      </td></tr>`;
+    }).join('');
+  };
+  el.querySelector('[data-apply]').onclick = apply;
+  el.querySelector('[data-clear]').onclick = ()=>{ el.querySelector('[data-filter-from]').value=''; el.querySelector('[data-filter-to]').value=''; el.querySelector('[data-filter-q]').value=''; apply(); };
+}
+
 function renderAccounts(){
   const wrap = $('#accountsCards'); if (!wrap) return;
   const nf = state.settings.numberFormat; const d = state.settings.decimals; const sym = state.settings.currencySymbol;
@@ -111,13 +158,41 @@ function renderAccounts(){
     const name = acc['Account Name'] || acc.AccountName || '';
     const type = acc.Type || '';
     const bal = Number(acc.Balance || 0);
+    const issuer = acc['Issuer'] || '';
+    const cardNumber = acc['Card Number'] || '';
     return `
       <div class="card">
         <div class="card-title"><i class="fa-solid ${iconForAccountType(type)}"></i> ${name}</div>
         <div class="card-value">${sym} ${formatNumber(bal, nf, d)}</div>
-        <div class="card-meta" style="color: var(--text-dim); font-size: 12px; margin-top: 6px;">${type}</div>
+        <div class="card-meta" style="color: var(--text-dim); font-size: 12px; margin-top: 6px;">${type}${issuer?` • ${issuer}`:''}${cardNumber?` • ${cardNumber.slice(-4)}`:''}</div>
+        <div style="margin-top:8px; display:flex; gap:8px;">
+          <button class="btn small" data-edit-account data-name="${name}"><i class="fa-solid fa-pen"></i> Edit</button>
+          <button class="btn danger small" data-delete-account data-name="${name}"><i class="fa-solid fa-trash"></i> Delete</button>
+        </div>
       </div>`;
   }).join('');
+  // bind account actions
+  wrap.querySelectorAll('[data-delete-account]').forEach(btn => btn.onclick = async (e)=>{
+    const name = e.currentTarget.getAttribute('data-name');
+    // find row index from table data
+    const { rows } = await api.getTable('Accounts');
+    const found = rows.find(r => r['Account Name'] === name);
+    if (!found) return;
+    if (!confirm('Delete this account?')) return;
+    await api.deleteRow('Accounts', found._row); await refreshAll();
+  });
+  wrap.querySelectorAll('[data-edit-account]').forEach(btn => btn.onclick = async (e)=>{
+    const name = e.currentTarget.getAttribute('data-name');
+    const { rows } = await api.getTable('Accounts');
+    const found = rows.find(r => r['Account Name'] === name);
+    if (!found) return;
+    openModal('#modalAccount');
+    $('#accName').value = found['Account Name'];
+    $('#accType').value = found['Type'];
+    $('#accInitialBalance').value = found['Balance'];
+    $('#accCardNumber').value = found['Card Number']||'';
+    $('#accIssuer').value = found['Issuer']||'';
+  });
 }
 
 function populateAccountSelect(select){
@@ -194,8 +269,10 @@ $('#saveExpense').addEventListener('click', async ()=>{
   };
   await api.addExpense(row); await refreshAll(); resetExpenseForm(); closeModals();
 });
+
+// Save Account includes card details
 $('#saveAccount').addEventListener('click', async ()=>{
-  const row = { AccountName: $('#accName').value, Type: $('#accType').value, Balance: Number($('#accInitialBalance').value||0) };
+  const row = { AccountName: $('#accName').value, Type: $('#accType').value, Balance: Number($('#accInitialBalance').value||0), 'Card Number': $('#accCardNumber').value, 'Issuer': $('#accIssuer').value };
   await api.addAccount(row); await refreshAll(); closeModals();
 });
 
@@ -216,24 +293,27 @@ $('#saveLentBorrowed').addEventListener('click', async ()=>{
   await api.addLentBorrowed(row); await refreshAll(); closeModals();
 });
 
-// View buttons
+// View buttons also render filters
 const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.addEventListener('click', async (e)=> {
   e.stopPropagation();
   location.hash = 'income';
   navigateTo('income');
   await renderTable('Income', '#incomeTableWrap');
+  renderFilters('#incomeFilters','Income');
 });
 const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.addEventListener('click', async (e)=> {
   e.stopPropagation();
   location.hash = 'expense';
   navigateTo('expense');
   await renderTable('Expense', '#expenseTableWrap');
+  renderFilters('#expenseFilters','Expense');
 });
 const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.addEventListener('click', async (e)=> {
   e.stopPropagation();
   location.hash = 'lentborrowed';
   navigateTo('lentborrowed');
   await renderTable('LentBorrowed', '#lentBorrowedTableWrap');
+  renderFilters('#lentBorrowedFilters','LentBorrowed');
 });
 
 async function renderTable(table, wrapSelector){
@@ -387,9 +467,9 @@ function bindActionButtons(){
   const addIncomeBtn = $('#btnAddIncome'); if (addIncomeBtn) addIncomeBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); openIncomeModal(); };
   const addExpenseBtn = $('#btnAddExpense'); if (addExpenseBtn) addExpenseBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'expense'; navigateTo('expense'); openExpenseModal(); };
   const addAccountBtn = $('#btnAddAccount'); if (addAccountBtn) addAccountBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'accounts'; navigateTo('accounts'); openModal('#modalAccount'); };
-  const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); await renderTable('Income', '#incomeTableWrap'); };
-  const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'expense'; navigateTo('expense'); await renderTable('Expense', '#expenseTableWrap'); };
-  const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'lentborrowed'; navigateTo('lentborrowed'); await renderTable('LentBorrowed', '#lentBorrowedTableWrap'); };
+  const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); openIncomeModal(); };
+  const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'expense'; navigateTo('expense'); openExpenseModal(); };
+  const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'lentborrowed'; navigateTo('lentborrowed'); openIncomeModal(); };
 }
 
 window.addEventListener('DOMContentLoaded', async ()=>{
