@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Personal Tracker</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body class="theme-dark">
+  <div id="app">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <button id="btnToggleSidebar" class="icon-btn" aria-label="Toggle Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="brand">💎 <span data-i18n="app_title">Personal Tracker</span></div>
+      </div>
+      <nav class="menu">
+        <button class="menu-item active" data-route="dashboard"><i class="fa-solid fa-grid-2"></i><span data-i18n="menu_dashboard">Dashboard</span></button>
+        <button class="menu-item" data-route="income"><i class="fa-solid fa-arrow-trend-up"></i><span data-i18n="menu_income">Income</span></button>
+        <button class="menu-item" data-route="expense"><i class="fa-solid fa-arrow-trend-down"></i><span data-i18n="menu_expense">Expense</span></button>
+        <button class="menu-item" data-route="accounts"><i class="fa-solid fa-wallet"></i><span data-i18n="menu_accounts">Accounts</span></button>
+        <button class="menu-item" data-route="transfer"><i class="fa-solid fa-right-left"></i><span data-i18n="menu_transfer">Transfer</span></button>
+        <button class="menu-item" data-route="lentborrowed"><i class="fa-solid fa-hand-holding-dollar"></i><span data-i18n="menu_lent_borrowed">Lent & Borrowed</span></button>
+        <button class="menu-item" data-route="settings"><i class="fa-solid fa-gear"></i><span data-i18n="menu_settings">Settings</span></button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="globalSearch" type="search" placeholder="Search..." data-i18n-placeholder="placeholder_search" />
+        </div>
+        <div class="topbar-actions">
+          <select id="languageSelect" class="select">
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+            <option value="bn">বাংলা</option>
+            <option value="hi">हिन्दी</option>
+            <option value="ne">नेपाली</option>
+          </select>
+          <select id="currencySymbolSelect" class="select">
+            <option>$</option>
+            <option>€</option>
+            <option>£</option>
+            <option>₹</option>
+            <option>৳</option>
+            <option>₨</option>
+            <option>QR</option>
+            <option>¥</option>
+            <option>₩</option>
+          </select>
+          <button id="themeToggle" class="icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+        </div>
+      </header>
+
+      <section id="route-dashboard" class="route active">
+        <div class="cards">
+          <div class="card"><div class="card-title" data-i18n="card_total_balance">Total Balance</div><div id="totalBalance" class="card-value">0</div></div>
+          <div class="card"><div class="card-title" data-i18n="card_total_income">Total Income</div><div id="totalIncome" class="card-value">0</div></div>
+          <div class="card"><div class="card-title" data-i18n="card_total_expense">Total Expense</div><div id="totalExpense" class="card-value">0</div></div>
+          <div class="card"><div class="card-title" data-i18n="card_cash_balance">Cash Balance</div><div id="cashBalance" class="card-value">0</div></div>
+          <div class="card"><div class="card-title" data-i18n="card_credit_balance">Credit Card Balance</div><div id="creditBalance" class="card-value">0</div></div>
+        </div>
+        <div class="filters">
+          <button class="chip active" data-filter="this_month" data-i18n="filter_this_month">This Month</button>
+          <button class="chip" data-filter="last_month" data-i18n="filter_last_month">Last Month</button>
+          <button class="chip" data-filter="this_year" data-i18n="filter_this_year">This Year</button>
+        </div>
+        <div class="charts-grid">
+          <canvas id="chartLine"></canvas>
+          <canvas id="chartBar"></canvas>
+          <canvas id="chartPie"></canvas>
+          <canvas id="chartDonut"></canvas>
+          <canvas id="chartStacked"></canvas>
+        </div>
+      </section>
+
+      <section id="route-income" class="route">
+        <div class="section-header">
+          <h2 data-i18n="menu_income">Income</h2>
+          <div class="actions">
+            <button id="btnAddIncome" class="btn primary"><i class="fa-solid fa-plus"></i><span data-i18n="btn_add">Add</span></button>
+            <button id="btnViewIncome" class="btn"><i class="fa-solid fa-table"></i><span data-i18n="btn_view">View</span></button>
+          </div>
+        </div>
+        <div id="incomeTableWrap" class="table-wrap hidden"></div>
+      </section>
+
+      <section id="route-expense" class="route">
+        <div class="section-header">
+          <h2 data-i18n="menu_expense">Expense</h2>
+          <div class="actions">
+            <button id="btnAddExpense" class="btn danger"><i class="fa-solid fa-plus"></i><span data-i18n="btn_add">Add</span></button>
+            <button id="btnViewExpense" class="btn"><i class="fa-solid fa-table"></i><span data-i18n="btn_view">View</span></button>
+          </div>
+        </div>
+        <div id="expenseTableWrap" class="table-wrap hidden"></div>
+      </section>
+
+      <section id="route-accounts" class="route">
+        <div class="section-header">
+          <h2 data-i18n="menu_accounts">Accounts</h2>
+          <div class="actions">
+            <button id="btnAddAccount" class="btn"><i class="fa-solid fa-plus"></i><span data-i18n="btn_add">Add</span></button>
+          </div>
+        </div>
+        <div id="accountsCards" class="cards"></div>
+      </section>
+
+      <section id="route-transfer" class="route">
+        <div class="section-header">
+          <h2 data-i18n="menu_transfer">Transfer</h2>
+          <div class="actions">
+            <button id="btnAddTransfer" class="btn"><i class="fa-solid fa-paper-plane"></i><span data-i18n="btn_add">Add</span></button>
+          </div>
+        </div>
+        <div id="transfersTableWrap" class="table-wrap hidden"></div>
+      </section>
+
+      <section id="route-lentborrowed" class="route">
+        <div class="section-header">
+          <h2 data-i18n="menu_lent_borrowed">Lent & Borrowed</h2>
+          <div class="actions">
+            <button id="btnAddLentBorrowed" class="btn"><i class="fa-solid fa-plus"></i><span data-i18n="btn_add">Add</span></button>
+            <button id="btnViewLentBorrowed" class="btn"><i class="fa-solid fa-table"></i><span data-i18n="btn_view">View</span></button>
+          </div>
+        </div>
+        <div id="lentBorrowedTableWrap" class="table-wrap hidden"></div>
+      </section>
+
+      <section id="route-settings" class="route">
+        <div class="section-header">
+          <h2 data-i18n="menu_settings">Settings</h2>
+        </div>
+        <div class="settings-grid">
+          <div class="setting">
+            <label data-i18n="settings_theme">Theme</label>
+            <div>
+              <button id="settingsThemeDark" class="btn small"><i class="fa-solid fa-moon"></i> <span data-i18n="theme_dark">Dark</span></button>
+              <button id="settingsThemeLight" class="btn small"><i class="fa-solid fa-sun"></i> <span data-i18n="theme_light">Light</span></button>
+            </div>
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_language">Language</label>
+            <select id="settingsLanguage" class="select">
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+              <option value="bn">বাংলা</option>
+              <option value="hi">हिन्दी</option>
+              <option value="ne">नेपाली</option>
+            </select>
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_currency_symbol">Currency Symbol</label>
+            <input id="settingsCurrencySymbol" class="input" value="$" />
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_date_format">Date Format</label>
+            <select id="settingsDateFormat" class="select">
+              <option>MM/DD/YYYY</option>
+              <option>DD/MM/YYYY</option>
+              <option>YYYY-MM-DD</option>
+            </select>
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_number_format">Number Format</label>
+            <select id="settingsNumberFormat" class="select">
+              <option>1,234.56</option>
+              <option>1.234,56</option>
+              <option>1234.56</option>
+            </select>
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_auto_sync">Auto Sync</label>
+            <input id="settingsAutoSync" type="checkbox" />
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_notifications">Notifications</label>
+            <input id="settingsNotifications" type="checkbox" />
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_multi_currency">Multi-Currency Mode</label>
+            <input id="settingsMultiCurrency" type="checkbox" />
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_base_currency">Base Currency</label>
+            <select id="settingsBaseCurrency" class="select">
+              <option>USD</option>
+              <option>EUR</option>
+              <option>GBP</option>
+              <option>INR</option>
+              <option>BDT</option>
+              <option>NPR</option>
+              <option>QAR</option>
+              <option>JPY</option>
+              <option>KRW</option>
+            </select>
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_categories">Manage Categories</label>
+            <textarea id="settingsCategories" class="textarea" rows="4" placeholder='{"income":["Salary"],"expense":["Food"]}'></textarea>
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_account_types">Account Types</label>
+            <input id="settingsAccountTypes" class="input" value="Bank,Cash,Credit Card" />
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_backup_export">Backup & Export</label>
+            <div>
+              <button id="btnExportJSON" class="btn small"><i class="fa-solid fa-download"></i> JSON</button>
+              <button id="btnExportCSV" class="btn small"><i class="fa-solid fa-file-csv"></i> CSV</button>
+              <button id="btnExportXLSX" class="btn small"><i class="fa-solid fa-file-excel"></i> Excel</button>
+            </div>
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_import_csv">Import CSV</label>
+            <input id="inputImportCSV" type="file" accept=".csv" />
+            <select id="importTarget" class="select">
+              <option value="Income">Income</option>
+              <option value="Expense">Expense</option>
+              <option value="Transfer">Transfer</option>
+              <option value="LentBorrowed">LentBorrowed</option>
+            </select>
+            <button id="btnImportCSV" class="btn small"><i class="fa-solid fa-upload"></i> <span data-i18n="btn_import">Import</span></button>
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_data_reset">Data Reset</label>
+            <button id="btnDataReset" class="btn danger small"><i class="fa-solid fa-trash"></i> <span data-i18n="btn_clear">Clear All Transactions</span></button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="modalOverlay" class="modal-overlay hidden"></div>
+
+  <div id="modalIncome" class="modal hidden">
+    <div class="modal-header"><h3 data-i18n="income_add">Add Income</h3><button class="icon-btn modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <input id="incDate" type="date" class="input" />
+        <input id="incAmount" type="number" step="0.01" class="input" placeholder="Amount" data-i18n-placeholder="placeholder_amount" />
+        <input id="incCategory" class="input" placeholder="Category" data-i18n-placeholder="placeholder_category" />
+        <input id="incAccount" class="input" placeholder="Account" data-i18n-placeholder="placeholder_account" />
+        <input id="incNotes" class="input" placeholder="Notes" data-i18n-placeholder="placeholder_notes" />
+        <div id="incCurrencyWrap" class="currency-wrap hidden">
+          <input id="incCurrency" class="input" placeholder="Currency (e.g., USD)" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="saveIncome" class="btn primary"><i class="fa-solid fa-check"></i> <span data-i18n="btn_save">Save</span></button>
+    </div>
+  </div>
+
+  <div id="modalExpense" class="modal hidden">
+    <div class="modal-header"><h3 data-i18n="expense_add">Add Expense</h3><button class="icon-btn modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <input id="expDate" type="date" class="input" />
+        <input id="expAmount" type="number" step="0.01" class="input" placeholder="Amount" data-i18n-placeholder="placeholder_amount" />
+        <input id="expCategory" class="input" placeholder="Category" data-i18n-placeholder="placeholder_category" />
+        <input id="expAccount" class="input" placeholder="Account" data-i18n-placeholder="placeholder_account" />
+        <input id="expNotes" class="input" placeholder="Notes" data-i18n-placeholder="placeholder_notes" />
+        <div id="expCurrencyWrap" class="currency-wrap hidden">
+          <input id="expCurrency" class="input" placeholder="Currency (e.g., USD)" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="saveExpense" class="btn danger"><i class="fa-solid fa-check"></i> <span data-i18n="btn_save">Save</span></button>
+    </div>
+  </div>
+
+  <div id="modalAccount" class="modal hidden">
+    <div class="modal-header"><h3 data-i18n="account_add">Add Account</h3><button class="icon-btn modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <input id="accName" class="input" placeholder="Account Name" data-i18n-placeholder="placeholder_account_name" />
+        <select id="accType" class="select">
+          <option>Bank</option>
+          <option>Cash</option>
+          <option>Credit Card</option>
+        </select>
+        <input id="accInitialBalance" type="number" step="0.01" class="input" placeholder="Initial Balance" data-i18n-placeholder="placeholder_initial_balance" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="saveAccount" class="btn"><i class="fa-solid fa-check"></i> <span data-i18n="btn_save">Save</span></button>
+    </div>
+  </div>
+
+  <div id="modalTransfer" class="modal hidden">
+    <div class="modal-header"><h3 data-i18n="transfer_add">Add Transfer</h3><button class="icon-btn modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <input id="trFrom" class="input" placeholder="From Account" data-i18n-placeholder="placeholder_from_account" />
+        <input id="trTo" class="input" placeholder="To Account" data-i18n-placeholder="placeholder_to_account" />
+        <input id="trAmount" type="number" step="0.01" class="input" placeholder="Amount" data-i18n-placeholder="placeholder_amount" />
+        <input id="trDate" type="date" class="input" />
+        <input id="trNotes" class="input" placeholder="Notes" data-i18n-placeholder="placeholder_notes" />
+        <div id="trCurrencyWrap" class="currency-wrap hidden">
+          <input id="trCurrency" class="input" placeholder="Currency (e.g., USD)" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="saveTransfer" class="btn"><i class="fa-solid fa-check"></i> <span data-i18n="btn_save">Save</span></button>
+    </div>
+  </div>
+
+  <div id="modalLentBorrowed" class="modal hidden">
+    <div class="modal-header"><h3 data-i18n="lent_borrowed_add">Add Lent/Borrowed</h3><button class="icon-btn modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <input id="lbName" class="input" placeholder="Name" />
+        <input id="lbAmount" type="number" step="0.01" class="input" placeholder="Amount" data-i18n-placeholder="placeholder_amount" />
+        <input id="lbDate" type="date" class="input" />
+        <select id="lbType" class="select">
+          <option value="Lent">Lent</option>
+          <option value="Borrowed">Borrowed</option>
+        </select>
+        <input id="lbNotes" class="input" placeholder="Notes" data-i18n-placeholder="placeholder_notes" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="saveLentBorrowed" class="btn"><i class="fa-solid fa-check"></i> <span data-i18n="btn_save">Save</span></button>
+    </div>
+  </div>
+
+  <script type="module" src="utils.js"></script>
+  <script type="module" src="i18n.js"></script>
+  <script type="module" src="api.js"></script>
+  <script type="module" src="charts.js"></script>
+  <script type="module" src="storage.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
