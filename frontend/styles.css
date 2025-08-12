@@ -49,6 +49,8 @@ body {
 /* Layering */
 .sidebar { z-index: 70; }
 .topbar { z-index: 80; position: sticky; top: 0; }
+.topbar.fixed { position: fixed; top: 0; left: 0; right: 0; }
+body .main { padding-top: 60px; }
 .main { position: relative; flex: 1; }
 
 /* Mobile sidebar behavior */
@@ -216,6 +218,7 @@ canvas { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,25
 /* Larger tap targets */
 .btn { min-height: 42px; }
 .icon-btn { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; }
+.icon-btn.pill { border-radius: 999px; padding: 8px 12px; min-width: 36px; justify-content: center; }
 
 /* Menu micro interactions */
 .menu-item:hover { transform: translateX(2px); }

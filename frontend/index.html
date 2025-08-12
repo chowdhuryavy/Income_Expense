@@ -35,31 +35,15 @@
     <div id="screenOverlay" class="screen-overlay"></div>
 
     <main class="main">
-      <header class="topbar">
+      <header class="topbar fixed">
         <button id="btnSidebarToggle" class="icon-btn" aria-label="Toggle Sidebar"><i class="fa-solid fa-bars"></i></button>
         <div class="search">
           <i class="fa-solid fa-magnifying-glass"></i>
           <input id="globalSearch" type="search" placeholder="Search..." data-i18n-placeholder="placeholder_search" />
         </div>
         <div class="topbar-actions">
-          <select id="languageSelect" class="select">
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
-            <option value="bn">বাংলা</option>
-            <option value="hi">हिन्दी</option>
-            <option value="ne">नेपाली</option>
-          </select>
-          <select id="currencySymbolSelect" class="select">
-            <option>$</option>
-            <option>€</option>
-            <option>£</option>
-            <option>₹</option>
-            <option>৳</option>
-            <option>₨</option>
-            <option>QR</option>
-            <option>¥</option>
-            <option>₩</option>
-          </select>
+          <button id="btnLang" class="icon-btn pill" title="Language">E</button>
+          <button id="btnCurr" class="icon-btn pill" title="Currency">$</button>
           <button id="themeToggle" class="icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
             <i class="fa-solid fa-moon"></i>
           </button>
@@ -259,6 +243,10 @@
           <div class="setting">
             <label data-i18n="settings_data_reset">Data Reset</label>
             <button id="btnDataReset" class="btn danger small"><i class="fa-solid fa-trash"></i> <span data-i18n="btn_clear">Clear All Transactions</span></button>
+          </div>
+          <div class="setting">
+            <label>Actions</label>
+            <button id="btnSaveSettings" class="btn primary"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
           </div>
         </div>
       </section>

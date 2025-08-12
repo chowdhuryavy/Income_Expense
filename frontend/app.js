@@ -75,6 +75,28 @@ if (themeToggle) themeToggle.addEventListener('click', () => toggleTheme());
 const langSel = $('#languageSelect'); if (langSel) langSel.addEventListener('change', (e) => { setLanguage(e.target.value); });
 const currSel = $('#currencySymbolSelect'); if (currSel) currSel.addEventListener('change', (e) => { state.settings.currencySymbol = e.target.value; saveSettings(); updateCards(); });
 
+// Compact header controls
+const btnLang = $('#btnLang');
+if (btnLang) btnLang.onclick = ()=>{
+  const langs = ['en','ar','bn','hi','ne'];
+  const current = state.settings.language || 'en';
+  const idx = (langs.indexOf(current)+1) % langs.length;
+  const next = langs[idx];
+  setLanguage(next);
+  btnLang.textContent = next.toUpperCase().slice(0,1);
+};
+const btnCurr = $('#btnCurr');
+if (btnCurr) btnCurr.onclick = ()=>{
+  const symbols = ['$', '€', '£', '₹', '৳', '₨', 'QR', '¥', '₩'];
+  const current = state.settings.currencySymbol || '$';
+  const idx = (symbols.indexOf(current)+1) % symbols.length;
+  const next = symbols[idx];
+  state.settings.currencySymbol = next; btnCurr.textContent = next; saveSettings(); updateCards();
+};
+
+// Save Settings button
+const btnSaveSettings = $('#btnSaveSettings'); if (btnSaveSettings) btnSaveSettings.onclick = ()=> saveSettings();
+
 function toggleTheme(target){
   const isLight = document.body.classList.toggle('theme-light');
   document.body.classList.toggle('theme-dark', !isLight);
