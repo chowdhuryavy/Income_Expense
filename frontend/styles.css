@@ -124,9 +124,12 @@ body {
 /* Charts animate in */
 .charts-grid canvas { animation: floatIn .45s ease both; }
 
+/* Default chart height (desktop) */
+.charts-grid canvas { height: 160px; }
+
 /* Extra small screens */
 @media (max-width: 560px){
-  canvas { height: 140px; }
+  .charts-grid canvas { height: 90px; }
 }
 
 .filters { display: flex; gap: 8px; margin: 12px 0 16px; }
@@ -134,7 +137,7 @@ body {
 .chip.active { border-color: var(--primary); background: linear-gradient(90deg, rgba(58,123,213,.25), rgba(0,210,255,.18)); }
 
 .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-canvas { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border-radius: 14px; padding: 12px; border: 1px solid rgba(255,255,255,0.06); }
+canvas { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border-radius: 14px; padding: 8px; border: 1px solid rgba(255,255,255,0.06); }
 
 .table-wrap { overflow: auto; background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); }
 .table { width: 100%; border-collapse: collapse; }
@@ -231,7 +234,7 @@ canvas { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,25
   .cards { gap: 10px; }
   .card { padding: 12px; }
   .charts-grid { gap: 10px; }
-  canvas { height: 180px; }
+  .charts-grid canvas { height: 120px; }
 }
 
 @media (max-width: 900px){

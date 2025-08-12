@@ -7,10 +7,16 @@ function baseChartOptions() {
   const gridColor = 'rgba(255,255,255,0.12)';
   return {
     responsive: true,
-    plugins: { legend: { labels: { color: textColor } } },
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: textColor, font: { size: 10 } } } },
     scales: {
-      x: { ticks: { color: textColor }, grid: { color: gridColor } },
-      y: { ticks: { color: textColor }, grid: { color: gridColor } }
+      x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
+      y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } }
+    },
+    elements: {
+      point: { radius: 1.5 },
+      line: { borderWidth: 1.5 },
+      bar: { borderWidth: 0 }
     }
   };
 }
@@ -24,7 +30,7 @@ export function initCharts(){
 
   chartLine = new Chart(ctxLine, {
     type: 'line',
-    data: { labels: [], datasets: [{ label: 'Net', data: [], borderColor: '#3a7bd5', backgroundColor: 'rgba(58,123,213,.35)' }] },
+    data: { labels: [], datasets: [{ label: 'Net', data: [], borderColor: '#3a7bd5', backgroundColor: 'rgba(58,123,213,.2)', fill: true }] },
     options: baseChartOptions()
   });
   chartBar = new Chart(ctxBar, {
@@ -33,7 +39,7 @@ export function initCharts(){
       { label: 'Income', data: [], backgroundColor: 'rgba(22,163,74,.7)' },
       { label: 'Expense', data: [], backgroundColor: 'rgba(220,38,38,.7)' }
     ] },
-    options: { ...baseChartOptions(), scales: { x: { stacked: true }, y: { stacked: true } } }
+    options: { ...baseChartOptions(), scales: { x: { stacked: true, ticks: { maxRotation: 0 } }, y: { stacked: true } } }
   });
   chartPie = new Chart(ctxPie, {
     type: 'pie', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#3a7bd5','#00d2ff','#16a34a','#dc2626','#f59e0b','#a855f7'] }] }, options: baseChartOptions()
@@ -61,23 +67,17 @@ export function refreshCharts(range = 'this_month'){
   const incData = labels.map(l => (incM.find(([k])=>k===l)?.[1]||0));
   const expData = labels.map(l => (expM.find(([k])=>k===l)?.[1]||0));
 
-  // Line: Net over time
   chartLine.data.labels = labels; chartLine.data.datasets[0].data = labels.map((l, idx)=> (incData[idx] - expData[idx])); chartLine.update();
-
-  // Stacked: Income vs Expense
   chartBar.data.labels = labels; chartBar.data.datasets[0].data = incData; chartBar.data.datasets[1].data = expData; chartBar.update();
 
-  // Pie: Expense by Category
   const expByCat = new Map(); exp.forEach(r => expByCat.set(r.Category, (expByCat.get(r.Category)||0)+Number(r.Amount||0)));
   const pieLabels = Array.from(expByCat.keys()); const pieData = Array.from(expByCat.values());
   chartPie.data.labels = pieLabels; chartPie.data.datasets[0].data = pieData; chartPie.update();
 
-  // Donut: Income by Category
   const incByCat = new Map(); inc.forEach(r => incByCat.set(r.Category, (incByCat.get(r.Category)||0)+Number(r.Amount||0)));
   const donutLabels = Array.from(incByCat.keys()); const donutData = Array.from(incByCat.values());
   chartDonut.data.labels = donutLabels; chartDonut.data.datasets[0].data = donutData; chartDonut.update();
 
-  // Stacked: Net by Month (reuse)
   chartStacked.data.labels = labels; chartStacked.data.datasets[0].data = labels.map((l, idx)=> (incData[idx] - expData[idx])); chartStacked.update();
 }
 
