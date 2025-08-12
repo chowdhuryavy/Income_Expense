@@ -138,9 +138,17 @@ canvas { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,25
 .only-mobile { display: none; }
 @media (max-width: 900px){ .only-mobile { display: inline-flex; } }
 
+.sidebar { width: 280px; /* expanded */ }
+.sidebar.mini { width: 76px; }
+.sidebar.mini .brand { display: none; }
+.sidebar.mini .menu-item { justify-content: center; }
+.sidebar.mini .menu-item span { display: none; }
+.sidebar.mini .menu-item i { margin: 0; }
+
 @media (max-width: 900px){
   .sidebar { position: fixed; z-index: 50; height: 100vh; transform: translateX(0); }
   .sidebar.collapsed { transform: translateX(-102%); }
+  .sidebar.mini { transform: translateX(0); }
   #app { padding-left: 0; }
   .topbar { flex-wrap: wrap; gap: 10px; }
   .search { width: 100%; }

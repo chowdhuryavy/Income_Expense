@@ -6,9 +6,23 @@ import { initCharts, refreshCharts, refreshChartTheme } from './charts.js';
 
 // Sidebar toggle
 const sidebar = $('#sidebar');
-$('#btnToggleSidebar').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
-const btnToggleSidebarTop = $('#btnToggleSidebarTop');
-if (btnToggleSidebarTop) btnToggleSidebarTop.addEventListener('click', () => sidebar.classList.remove('collapsed'));
+const btnSidebarToggle = $('#btnSidebarToggle');
+if (btnSidebarToggle) btnSidebarToggle.addEventListener('click', () => {
+  // Toggle between expanded and mini
+  if (sidebar.classList.contains('mini')) {
+    sidebar.classList.remove('mini');
+  } else {
+    sidebar.classList.add('mini');
+  }
+});
+
+// Collapse to mini when clicking outside sidebar on mobile
+window.addEventListener('click', (e) => {
+  const isInsideSidebar = sidebar.contains(e.target) || (btnSidebarToggle && btnSidebarToggle.contains(e.target));
+  if (!isInsideSidebar) {
+    sidebar.classList.add('mini');
+  }
+});
 
 // Routing
 const routes = $$('.menu-item');
@@ -19,7 +33,8 @@ routes.forEach(btn => btn.addEventListener('click', async () => {
   $$('.route').forEach(sec => sec.classList.remove('active'));
   const target = `#route-${route}`;
   const section = document.querySelector(target); if (section) section.classList.add('active');
-  if (window.innerWidth <= 900) sidebar.classList.add('collapsed');
+  // Collapse to mini on selection for better content space
+  sidebar.classList.add('mini');
   // auto-load views when entering sections
   if (route === 'income') await renderTable('Income', '#incomeTableWrap');
   if (route === 'expense') await renderTable('Expense', '#expenseTableWrap');

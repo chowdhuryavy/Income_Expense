@@ -17,19 +17,16 @@
   <div id="app">
     <aside id="sidebar" class="sidebar">
       <div class="sidebar-header">
-        <button id="btnToggleSidebar" class="icon-btn" aria-label="Toggle Menu">
-          <i class="fa-solid fa-bars"></i>
-        </button>
         <div class="brand">💎 <span data-i18n="app_title">Personal Tracker</span></div>
       </div>
       <nav class="menu">
-        <button class="menu-item active" data-route="dashboard"><i class="fa-solid fa-grid-2"></i><span data-i18n="menu_dashboard">Dashboard</span></button>
-        <button class="menu-item" data-route="income"><i class="fa-solid fa-arrow-trend-up"></i><span data-i18n="menu_income">Income</span></button>
-        <button class="menu-item" data-route="expense"><i class="fa-solid fa-arrow-trend-down"></i><span data-i18n="menu_expense">Expense</span></button>
-        <button class="menu-item" data-route="accounts"><i class="fa-solid fa-wallet"></i><span data-i18n="menu_accounts">Accounts</span></button>
-        <button class="menu-item" data-route="transfer"><i class="fa-solid fa-right-left"></i><span data-i18n="menu_transfer">Transfer</span></button>
-        <button class="menu-item" data-route="lentborrowed"><i class="fa-solid fa-hand-holding-dollar"></i><span data-i18n="menu_lent_borrowed">Lent & Borrowed</span></button>
-        <button class="menu-item" data-route="settings"><i class="fa-solid fa-gear"></i><span data-i18n="menu_settings">Settings</span></button>
+        <button class="menu-item active" data-route="dashboard" title="Dashboard"><i class="fa-solid fa-grid-2"></i><span data-i18n="menu_dashboard">Dashboard</span></button>
+        <button class="menu-item" data-route="income" title="Income"><i class="fa-solid fa-arrow-trend-up"></i><span data-i18n="menu_income">Income</span></button>
+        <button class="menu-item" data-route="expense" title="Expense"><i class="fa-solid fa-arrow-trend-down"></i><span data-i18n="menu_expense">Expense</span></button>
+        <button class="menu-item" data-route="accounts" title="Accounts"><i class="fa-solid fa-wallet"></i><span data-i18n="menu_accounts">Accounts</span></button>
+        <button class="menu-item" data-route="transfer" title="Transfer"><i class="fa-solid fa-right-left"></i><span data-i18n="menu_transfer">Transfer</span></button>
+        <button class="menu-item" data-route="lentborrowed" title="Lent & Borrowed"><i class="fa-solid fa-hand-holding-dollar"></i><span data-i18n="menu_lent_borrowed">Lent & Borrowed</span></button>
+        <button class="menu-item" data-route="settings" title="Settings"><i class="fa-solid fa-gear"></i><span data-i18n="menu_settings">Settings</span></button>
       </nav>
       <div class="sidebar-footer">
         <div class="signature">Designed by Avy</div>
@@ -38,7 +35,7 @@
 
     <main class="main">
       <header class="topbar">
-        <button id="btnToggleSidebarTop" class="icon-btn only-mobile" aria-label="Open Menu"><i class="fa-solid fa-bars"></i></button>
+        <button id="btnSidebarToggle" class="icon-btn" aria-label="Toggle Sidebar"><i class="fa-solid fa-bars"></i></button>
         <div class="search">
           <i class="fa-solid fa-magnifying-glass"></i>
           <input id="globalSearch" type="search" placeholder="Search..." data-i18n-placeholder="placeholder_search" />
