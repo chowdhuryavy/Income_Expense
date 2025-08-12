@@ -74,13 +74,14 @@ function setLanguage(lang){ translatePage(lang); state.settings.language = lang;
 
 // Cards update
 function updateCards(){
-  const { income, expense, balance, cash, credit } = totals();
+  const { income, expense, balance, cash, credit, debit } = totals();
   const nf = state.settings.numberFormat; const d = state.settings.decimals; const sym = state.settings.currencySymbol;
   $('#totalIncome').textContent = sym + ' ' + formatNumber(income, nf, d);
   $('#totalExpense').textContent = sym + ' ' + formatNumber(expense, nf, d);
   $('#totalBalance').textContent = sym + ' ' + formatNumber(balance, nf, d);
   $('#cashBalance').textContent = sym + ' ' + formatNumber(cash, nf, d);
   $('#creditBalance').textContent = sym + ' ' + formatNumber(credit, nf, d);
+  const debitEl = $('#debitBalance'); if (debitEl) debitEl.textContent = sym + ' ' + formatNumber(debit, nf, d);
 }
 
 function iconForAccountType(type){
@@ -192,7 +193,8 @@ $('#btnViewLentBorrowed').addEventListener('click', async (e)=> { e.stopPropagat
 
 async function renderTable(table, wrapSelector){
   const wrap = $(wrapSelector); wrap.classList.remove('hidden');
-  const data = await api.getTable(table);
+  let data;
+  try { data = await api.getTable(table); } catch (e){ console.error('Failed to load table', table, e); wrap.innerHTML = `<div style="padding:12px;">Failed to load ${table}</div>`; return; }
   const rows = data.rows || [];
   const headers = rows.length ? Object.keys(rows[0]) : [];
   const html = `

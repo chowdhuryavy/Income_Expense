@@ -42,7 +42,8 @@ export function totals(){
   const balance = income - expense + state.accounts.reduce((a,acc) => a + Number(acc.Balance || 0), 0) - (sum(state.transfer.filter(()=>false))); // accounts already include balances
   const cash = state.accounts.filter(a => (a.Type||'').toLowerCase()==='cash').reduce((a,acc)=>a+Number(acc.Balance||0),0);
   const credit = state.accounts.filter(a => (a.Type||'').toLowerCase().includes('credit')).reduce((a,acc)=>a+Number(acc.Balance||0),0);
-  return { income, expense, balance, cash, credit };
+  const debit = state.accounts.filter(a => (a.Type||'').toLowerCase().includes('debit')).reduce((a,acc)=>a+Number(acc.Balance||0),0);
+  return { income, expense, balance, cash, credit, debit };
 }
 
 export function filterByDateRange(rows, range){
