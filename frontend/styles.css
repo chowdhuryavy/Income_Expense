@@ -49,7 +49,8 @@ body {
 .brand { font-weight: 700; letter-spacing: .4px; }
 .menu { display: flex; flex-direction: column; padding: 8px; gap: 6px; }
 .menu-item {
-  display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px;
+  display: flex; align-items: center; gap: 12px; padding: 16px 16px; border-radius: 12px;
+  width: 100%; font-size: 16px; line-height: 1.2;
   background: transparent; color: var(--text); border: none; text-align: left; cursor: pointer; transition: background .2s, transform .08s;
 }
 .menu-item i { width: 20px; text-align: center; }
@@ -118,12 +119,30 @@ canvas { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,25
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .currency-wrap.hidden { display: none; }
 
+.sidebar-footer { margin-top: auto; padding: 14px; border-top: 1px solid rgba(255,255,255,0.06); }
+.signature { font-weight: 700; letter-spacing: .6px; background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399, #fbbf24, #f472b6);
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 3s linear infinite; }
+@keyframes shimmer { 0% { filter: hue-rotate(0deg);} 100% { filter: hue-rotate(360deg);} }
+
 @media (max-width: 900px){
-  .sidebar { position: fixed; z-index: 50; height: 100vh; }
+  .sidebar { position: fixed; z-index: 50; height: 100vh; transform: translateX(0); }
   .sidebar.collapsed { transform: translateX(-102%); }
   #app { padding-left: 0; }
+  .topbar { flex-wrap: wrap; gap: 10px; }
+  .search { width: 100%; }
+  .search input { width: 100%; min-width: 0; }
+  .topbar-actions { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .icon-btn, .select { width: 100%; }
 }
 
 @media (max-width: 560px){
   .form-grid { grid-template-columns: 1fr; }
 }
+
+/* Larger tap targets */
+.btn { min-height: 42px; }
+.icon-btn { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; }
+
+/* Menu micro interactions */
+.menu-item:hover { transform: translateX(2px); }
+.menu-item:active { transform: scale(.98); }

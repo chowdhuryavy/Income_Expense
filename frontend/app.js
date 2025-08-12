@@ -68,6 +68,19 @@ function renderAccounts(){
   }).join('');
 }
 
+function populateAccountSelect(select){
+  if (!select) return;
+  const opts = state.accounts.map(a => `<option value="${a['Account Name']}">${a['Account Name']}</option>`).join('');
+  select.innerHTML = `<option value="" disabled selected>Select Account</option>${opts}`;
+}
+
+function renderTransferInline(){
+  populateAccountSelect($('#trFromSelect'));
+  populateAccountSelect($('#trToSelect'));
+  $('#trDateInline').value = todayISO();
+  const show = state.settings.multiCurrency; $('#trCurrencyWrapInline').classList.toggle('hidden', !show);
+}
+
 // Modals
 const modals = $$('.modal');
 const overlay = $('#modalOverlay');
@@ -77,10 +90,10 @@ overlay.addEventListener('click', closeModals);
 $$('.modal .modal-close').forEach(btn => btn.addEventListener('click', closeModals));
 
 // Open modal buttons
-$('#btnAddIncome').addEventListener('click', ()=>{ $('#incDate').value = todayISO(); toggleCurrencyRow('inc'); openModal('#modalIncome'); });
-$('#btnAddExpense').addEventListener('click', ()=>{ $('#expDate').value = todayISO(); toggleCurrencyRow('exp'); openModal('#modalExpense'); });
+$('#btnAddIncome').addEventListener('click', ()=>{ $('#incDate').value = todayISO(); populateAccountSelect($('#incAccountSelect')); toggleCurrencyRow('inc'); openModal('#modalIncome'); });
+$('#btnAddExpense').addEventListener('click', ()=>{ $('#expDate').value = todayISO(); populateAccountSelect($('#expAccountSelect')); toggleCurrencyRow('exp'); openModal('#modalExpense'); });
 $('#btnAddAccount').addEventListener('click', ()=> openModal('#modalAccount'));
-$('#btnAddTransfer').addEventListener('click', ()=>{ $('#trDate').value = todayISO(); toggleCurrencyRow('tr'); openModal('#modalTransfer'); });
+// removed transfer modal open
 $('#btnAddLentBorrowed').addEventListener('click', ()=> openModal('#modalLentBorrowed'));
 
 function toggleCurrencyRow(prefix){
@@ -94,7 +107,7 @@ $('#saveIncome').addEventListener('click', async ()=>{
     Date: $('#incDate').value,
     Amount: Number($('#incAmount').value||0),
     Category: $('#incCategory').value,
-    Account: $('#incAccount').value,
+    Account: $('#incAccountSelect').value,
     Notes: $('#incNotes').value,
     Currency: state.settings.multiCurrency ? ($('#incCurrency').value||state.settings.baseCurrency) : state.settings.baseCurrency
   };
@@ -105,7 +118,7 @@ $('#saveExpense').addEventListener('click', async ()=>{
     Date: $('#expDate').value,
     Amount: Number($('#expAmount').value||0),
     Category: $('#expCategory').value,
-    Account: $('#expAccount').value,
+    Account: $('#expAccountSelect').value,
     Notes: $('#expNotes').value,
     Currency: state.settings.multiCurrency ? ($('#expCurrency').value||state.settings.baseCurrency) : state.settings.baseCurrency
   };
@@ -115,17 +128,19 @@ $('#saveAccount').addEventListener('click', async ()=>{
   const row = { AccountName: $('#accName').value, Type: $('#accType').value, Balance: Number($('#accInitialBalance').value||0) };
   await api.addAccount(row); await refreshAll(); closeModals();
 });
-$('#saveTransfer').addEventListener('click', async ()=>{
+
+$('#submitTransferInline').addEventListener('click', async ()=>{
   const row = {
-    FromAccount: $('#trFrom').value,
-    ToAccount: $('#trTo').value,
-    Amount: Number($('#trAmount').value||0),
-    Date: $('#trDate').value,
-    Notes: $('#trNotes').value,
-    Currency: state.settings.multiCurrency ? ($('#trCurrency').value||state.settings.baseCurrency) : state.settings.baseCurrency
+    FromAccount: $('#trFromSelect').value,
+    ToAccount: $('#trToSelect').value,
+    Amount: Number($('#trAmountInline').value||0),
+    Date: $('#trDateInline').value,
+    Notes: $('#trNotesInline').value,
+    Currency: state.settings.multiCurrency ? ($('#trCurrencyInline').value||state.settings.baseCurrency) : state.settings.baseCurrency
   };
-  await api.addTransfer(row); await refreshAll(); closeModals();
+  await api.addTransfer(row); await refreshAll();
 });
+
 $('#saveLentBorrowed').addEventListener('click', async ()=>{
   const row = { Name: $('#lbName').value, Amount: Number($('#lbAmount').value||0), Date: $('#lbDate').value, Type: $('#lbType').value, Notes: $('#lbNotes').value };
   await api.addLentBorrowed(row); await refreshAll(); closeModals();
@@ -206,6 +221,7 @@ async function refreshAll(){
   applySettingsToUI();
   updateCards();
   renderAccounts();
+  renderTransferInline();
   refreshCharts($('.chip.active')?.dataset.filter || 'this_month');
 }
 
