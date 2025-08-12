@@ -206,6 +206,11 @@ function renderTransferInline(){
   populateAccountSelect($('#trToSelect'));
   $('#trDateInline').value = todayISO();
   const show = state.settings.multiCurrency; $('#trCurrencyWrapInline').classList.toggle('hidden', !show);
+  const swap = $('#btnSwapAccounts');
+  if (swap) swap.onclick = ()=>{
+    const from = $('#trFromSelect'); const to = $('#trToSelect');
+    const tmp = from.value; from.value = to.value; to.value = tmp;
+  };
 }
 
 function populateCategorySelect(select, type){

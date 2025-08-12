@@ -129,9 +129,23 @@
           
         </div>
         <div id="transferFormWrap" class="card" style="max-width: 720px;">
+          <div class="transfer-head">
+            <div class="transfer-title"><i class="fa-solid fa-right-left"></i> Transfer between accounts</div>
+          </div>
+          <div class="transfer-row">
+            <div class="field">
+              <label>From</label>
+              <select id="trFromSelect" class="select"></select>
+            </div>
+            <button id="btnSwapAccounts" class="icon-btn swap-btn" title="Swap">
+              <i class="fa-solid fa-right-left"></i>
+            </button>
+            <div class="field">
+              <label>To</label>
+              <select id="trToSelect" class="select"></select>
+            </div>
+          </div>
           <div class="form-grid">
-            <select id="trFromSelect" class="select"></select>
-            <select id="trToSelect" class="select"></select>
             <input id="trAmountInline" type="number" step="0.01" class="input" placeholder="Amount" data-i18n-placeholder="placeholder_amount" />
             <input id="trDateInline" type="date" class="input" />
             <input id="trNotesInline" class="input" placeholder="Notes" data-i18n-placeholder="placeholder_notes" />
