@@ -159,12 +159,13 @@ function renderAccounts(){
     const type = acc.Type || '';
     const bal = Number(acc.Balance || 0);
     const issuer = acc['Issuer'] || '';
-    const cardNumber = acc['Card Number'] || '';
+    const cardNumber = (acc['Card Number'] != null) ? String(acc['Card Number']) : '';
+    const last4 = cardNumber ? cardNumber.slice(-4) : '';
     return `
       <div class="card">
         <div class="card-title"><i class="fa-solid ${iconForAccountType(type)}"></i> ${name}</div>
         <div class="card-value">${sym} ${formatNumber(bal, nf, d)}</div>
-        <div class="card-meta" style="color: var(--text-dim); font-size: 12px; margin-top: 6px;">${type}${issuer?` • ${issuer}`:''}${cardNumber?` • ${cardNumber.slice(-4)}`:''}</div>
+        <div class="card-meta" style="color: var(--text-dim); font-size: 12px; margin-top: 6px;">${type}${issuer?` • ${issuer}`:''}${last4?` • ${last4}`:''}</div>
         <div style="margin-top:8px; display:flex; gap:8px;">
           <button class="btn small" data-edit-account data-name="${name}"><i class="fa-solid fa-pen"></i> Edit</button>
           <button class="btn danger small" data-delete-account data-name="${name}"><i class="fa-solid fa-trash"></i> Delete</button>
@@ -174,7 +175,6 @@ function renderAccounts(){
   // bind account actions
   wrap.querySelectorAll('[data-delete-account]').forEach(btn => btn.onclick = async (e)=>{
     const name = e.currentTarget.getAttribute('data-name');
-    // find row index from table data
     const { rows } = await api.getTable('Accounts');
     const found = rows.find(r => r['Account Name'] === name);
     if (!found) return;
@@ -333,7 +333,7 @@ async function renderTable(table, wrapSelector){
     <table class="table">
       <thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}<th>Actions</th></tr></thead>
       <tbody>
-        ${rows.map(r => `<tr data-row="${r._row}">${headers.map(h=>`<td data-key="${h}">${r[h]??''}</td>`).join('')}<td>
+        ${rows.map(r => `<tr data-row="${r._row}">${headers.map(h=>`<td data-key="${h}">${h==='Date'?formatLocalDate(r[h]):(r[h]??'')}</td>`).join('')}<td>
           <button class="btn small" data-edit><i class="fa-solid fa-pen"></i> Edit</button>
           <button class="btn danger small" data-delete><i class="fa-solid fa-trash"></i> Delete</button>
         </td></tr>`).join('')}
@@ -342,40 +342,27 @@ async function renderTable(table, wrapSelector){
   wrap.innerHTML = html;
   const backBtn = wrap.querySelector('[data-back]');
   if (backBtn) backBtn.addEventListener('click', () => { location.hash = 'dashboard'; navigateTo('dashboard'); });
-  wrap.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', async (e) => {
+  // delegate clicks for edit/delete so it still works after filtering
+  wrap.onclick = async (e)=>{
+    const del = e.target.closest('[data-delete]');
+    const ed = e.target.closest('[data-edit]');
+    if (!del && !ed) return;
     const tr = e.target.closest('tr'); const row = Number(tr.getAttribute('data-row'));
-    if (!confirm('Delete this row?')) return;
-    await api.deleteRow(table, row); await refreshAll(); await renderTable(table, wrapSelector);
-  }));
-  wrap.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', async (e) => {
-    const tr = e.target.closest('tr'); const row = Number(tr.getAttribute('data-row'));
-    const getVal = (k) => tr.querySelector(`td[data-key="${k}"]`)?.textContent || '';
-    if (table === 'Income'){
-      location.hash = 'income'; navigateTo('income');
-      $('#incDate').value = getVal('Date');
-      $('#incAmount').value = getVal('Amount');
-      $('#incCategorySelect').value = getVal('Category');
-      populateAccountSelect($('#incAccountSelect')); $('#incAccountSelect').value = getVal('Account');
-      $('#incNotes').value = getVal('Notes');
-      openModal('#modalIncome');
-    } else if (table === 'Expense'){
-      location.hash = 'expense'; navigateTo('expense');
-      $('#expDate').value = getVal('Date');
-      $('#expAmount').value = getVal('Amount');
-      $('#expCategorySelect').value = getVal('Category');
-      populateAccountSelect($('#expAccountSelect')); $('#expAccountSelect').value = getVal('Account');
-      $('#expNotes').value = getVal('Notes');
-      openModal('#modalExpense');
-    } else if (table === 'LentBorrowed'){
-      location.hash = 'lentborrowed'; navigateTo('lentborrowed');
-      $('#lbName').value = getVal('Name');
-      $('#lbAmount').value = getVal('Amount');
-      $('#lbDate').value = getVal('Date');
-      $('#lbType').value = getVal('Type');
-      $('#lbNotes').value = getVal('Notes');
-      openModal('#modalLentBorrowed');
+    if (del){ if (!confirm('Delete this row?')) return; await api.deleteRow(table, row); await refreshAll(); await renderTable(table, wrapSelector); return; }
+    if (ed){
+      const getVal = (k) => tr.querySelector(`td[data-key="${k}"]`)?.textContent || '';
+      if (table === 'Income'){
+        location.hash = 'income'; navigateTo('income');
+        $('#incDate').value = getVal('Date'); $('#incAmount').value = getVal('Amount'); $('#incCategorySelect').value = getVal('Category'); populateAccountSelect($('#incAccountSelect')); $('#incAccountSelect').value = getVal('Account'); $('#incNotes').value = getVal('Notes'); openModal('#modalIncome');
+      } else if (table === 'Expense'){
+        location.hash = 'expense'; navigateTo('expense');
+        $('#expDate').value = getVal('Date'); $('#expAmount').value = getVal('Amount'); $('#expCategorySelect').value = getVal('Category'); populateAccountSelect($('#expAccountSelect')); $('#expAccountSelect').value = getVal('Account'); $('#expNotes').value = getVal('Notes'); openModal('#modalExpense');
+      } else if (table === 'LentBorrowed'){
+        location.hash = 'lentborrowed'; navigateTo('lentborrowed');
+        $('#lbName').value = getVal('Name'); $('#lbAmount').value = getVal('Amount'); $('#lbDate').value = getVal('Date'); $('#lbType').value = getVal('Type'); $('#lbNotes').value = getVal('Notes'); openModal('#modalLentBorrowed');
+      }
     }
-  }));
+  };
 }
 
 // Override totals balance logic to prevent double counting
