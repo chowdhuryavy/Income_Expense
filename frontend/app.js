@@ -7,7 +7,8 @@ import { initCharts, refreshCharts, refreshChartTheme } from './charts.js';
 // Sidebar toggle
 const sidebar = $('#sidebar');
 const btnSidebarToggle = $('#btnSidebarToggle');
-if (btnSidebarToggle) btnSidebarToggle.addEventListener('click', () => {
+if (btnSidebarToggle) btnSidebarToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
   // Toggle between expanded and mini
   if (sidebar.classList.contains('mini')) {
     sidebar.classList.remove('mini');
@@ -16,29 +17,44 @@ if (btnSidebarToggle) btnSidebarToggle.addEventListener('click', () => {
   }
 });
 
-// Collapse to mini when clicking outside sidebar on mobile
+// Collapse to mini when clicking outside sidebar and topbar
 window.addEventListener('click', (e) => {
-  const isInsideSidebar = sidebar.contains(e.target) || (btnSidebarToggle && btnSidebarToggle.contains(e.target));
-  if (!isInsideSidebar) {
+  const topbar = document.querySelector('.topbar');
+  const isInsideSidebar = sidebar.contains(e.target);
+  const isInsideTopbar = topbar && topbar.contains(e.target);
+  if (!isInsideSidebar && !isInsideTopbar) {
     sidebar.classList.add('mini');
   }
 });
 
+// Simple hash router
+function navigateTo(route){
+  if (!route) route = 'dashboard';
+  routes.forEach(b => b.classList.remove('active'));
+  const match = Array.from(routes).find(b => b.getAttribute('data-route') === route);
+  if (match) match.classList.add('active');
+  $$('.route').forEach(sec => sec.classList.remove('active'));
+  const section = document.querySelector(`#route-${route}`);
+  if (section) section.classList.add('active');
+}
+
+window.addEventListener('hashchange', () => {
+  const route = location.hash.replace('#','');
+  navigateTo(route);
+});
+
 // Routing
 const routes = $$('.menu-item');
-routes.forEach(btn => btn.addEventListener('click', async () => {
-  routes.forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+routes.forEach(btn => btn.addEventListener('click', async (e) => {
+  e.stopPropagation();
   const route = btn.getAttribute('data-route');
-  $$('.route').forEach(sec => sec.classList.remove('active'));
-  const target = `#route-${route}`;
-  const section = document.querySelector(target); if (section) section.classList.add('active');
-  // Collapse to mini on selection for better content space
+  location.hash = route; // triggers hashchange + navigate
   sidebar.classList.add('mini');
-  // auto-load views when entering sections
-  if (route === 'income') await renderTable('Income', '#incomeTableWrap');
-  if (route === 'expense') await renderTable('Expense', '#expenseTableWrap');
-  if (route === 'lentborrowed') await renderTable('LentBorrowed', '#lentBorrowedTableWrap');
+  try {
+    if (route === 'income') await renderTable('Income', '#incomeTableWrap');
+    if (route === 'expense') await renderTable('Expense', '#expenseTableWrap');
+    if (route === 'lentborrowed') await renderTable('LentBorrowed', '#lentBorrowedTableWrap');
+  } catch (err) { console.warn('Navigation data load failed:', err); }
 }));
 
 // Topbar theme and language
@@ -170,9 +186,9 @@ $('#saveLentBorrowed').addEventListener('click', async ()=>{
 });
 
 // View buttons
-$('#btnViewIncome').addEventListener('click', async ()=> { await renderTable('Income', '#incomeTableWrap'); document.querySelector('#route-income').classList.add('active'); });
-$('#btnViewExpense').addEventListener('click', async ()=> { await renderTable('Expense', '#expenseTableWrap'); document.querySelector('#route-expense').classList.add('active'); });
-$('#btnViewLentBorrowed').addEventListener('click', async ()=> { await renderTable('LentBorrowed', '#lentBorrowedTableWrap'); document.querySelector('#route-lentborrowed').classList.add('active'); });
+$('#btnViewIncome').addEventListener('click', async (e)=> { e.stopPropagation(); location.hash = 'income'; try { await renderTable('Income', '#incomeTableWrap'); } catch {} });
+$('#btnViewExpense').addEventListener('click', async (e)=> { e.stopPropagation(); location.hash = 'expense'; try { await renderTable('Expense', '#expenseTableWrap'); } catch {} });
+$('#btnViewLentBorrowed').addEventListener('click', async (e)=> { e.stopPropagation(); location.hash = 'lentborrowed'; try { await renderTable('LentBorrowed', '#lentBorrowedTableWrap'); } catch {} });
 
 async function renderTable(table, wrapSelector){
   const wrap = $(wrapSelector); wrap.classList.remove('hidden');
@@ -275,5 +291,7 @@ $$('.filters .chip').forEach(chip => chip.addEventListener('click', () => {
 
 window.addEventListener('DOMContentLoaded', async ()=>{
   initCharts();
+  // initial route
+  navigateTo(location.hash.replace('#','') || 'dashboard');
   try { await refreshAll(); } catch (e) { console.error(e); alert('Configure API URL in frontend/api.js and deploy Apps Script Web App.'); }
 });
