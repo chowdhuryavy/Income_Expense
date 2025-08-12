@@ -84,7 +84,8 @@ function setLanguage(lang){ translatePage(lang); state.settings.language = lang;
 
 // Cards update
 function updateCards(){
-  const { income, expense, balance, cash, credit, debit } = totals();
+  const { income, expense, cash, credit, debit } = totals();
+  const balance = computeAccountsTotal();
   const nf = state.settings.numberFormat; const d = state.settings.decimals; const sym = state.settings.currencySymbol;
   $('#totalIncome').textContent = sym + ' ' + formatNumber(income, nf, d);
   $('#totalExpense').textContent = sym + ' ' + formatNumber(expense, nf, d);
@@ -227,15 +228,36 @@ async function renderTable(table, wrapSelector){
   let data;
   try { data = await api.getTable(table); } catch (e){ console.error('Failed to load table', table, e); wrap.innerHTML = `<div style="padding:12px;">Failed to load ${table}</div>`; return; }
   const rows = data.rows || [];
-  const headers = rows.length ? Object.keys(rows[0]) : [];
+  const headers = rows.length ? Object.keys(rows[0]).filter(h => h !== '_row') : [];
   const html = `
     <table class="table">
-      <thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+      <thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}<th>Actions</th></tr></thead>
       <tbody>
-        ${rows.map(r => `<tr>${headers.map(h=>`<td>${r[h]??''}</td>`).join('')}</tr>`).join('')}
+        ${rows.map(r => `<tr data-row="${r._row}">${headers.map(h=>`<td>${r[h]??''}</td>`).join('')}<td>
+          <button class="btn small" data-edit>Edit</button>
+          <button class="btn danger small" data-delete>Delete</button>
+        </td></tr>`).join('')}
       </tbody>
     </table>`;
   wrap.innerHTML = html;
+  // bind actions
+  wrap.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', async (e) => {
+    const tr = e.target.closest('tr'); const row = Number(tr.getAttribute('data-row'));
+    if (!confirm('Delete this row?')) return;
+    await api.deleteRow(table, row); await refreshAll(); await renderTable(table, wrapSelector);
+  }));
+  wrap.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', async (e) => {
+    const tr = e.target.closest('tr'); const row = Number(tr.getAttribute('data-row'));
+    const tds = Array.from(tr.children).slice(0, headers.length);
+    const values = {}; headers.forEach((h, idx) => values[h] = prompt(`Edit ${h}`, tds[idx].textContent) ?? tds[idx].textContent);
+    await api.updateRow(table, row, values); await refreshAll(); await renderTable(table, wrapSelector);
+  }));
+}
+
+// Override totals balance logic to prevent double counting
+import { state as __stateRef } from './storage.js';
+function computeAccountsTotal(){
+  return (__stateRef.accounts || []).reduce((a, acc) => a + Number(acc.Balance || 0), 0);
 }
 
 // Settings panel wiring

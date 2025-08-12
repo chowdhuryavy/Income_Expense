@@ -45,7 +45,7 @@ function doGet(e){
     const action = (e.parameter.action||'').trim();
     if (action === 'ping') return _json({ ok: true, time: new Date().toISOString() });
     if (action === 'getAllData') return _json(_getAll());
-    if (action === 'getTable') return _json({ rows: _readTable(e.parameter.table) });
+    if (action === 'getTable') return _json({ rows: _readTableWithRow(e.parameter.table) });
     if (action === 'getSettings') return _json(_getSettings());
     if (action === 'exportBackup') return _json(_exportBackup());
     return _json({ error: 'Unknown action' });
@@ -67,6 +67,8 @@ function doPost(e){
     if (action === 'updateSettings') return _json(updateSettings(payload));
     if (action === 'resetData') return _json(resetData());
     if (action === 'importCSV') return _json(importCSV(payload));
+    if (action === 'deleteRow') return _json(deleteRow(payload));
+    if (action === 'updateRow') return _json(updateRow(payload));
     return _json({ error: 'Unknown action' });
   } catch (err) {
     return _json({ error: err.message || String(err) });
@@ -84,6 +86,21 @@ function _readTable(name){
   return values.slice(1).filter(r => r.some(v => v !== '' && v !== null)).map(row => {
     const obj = {}; headers.forEach((h,i) => obj[h] = row[i]); return obj;
   });
+}
+
+function _readTableWithRow(name){
+  const ss = _ss(); const sh = ss.getSheetByName(name); if (!sh) return [];
+  const range = sh.getDataRange(); const values = range.getValues(); if (values.length < 2) return [];
+  const headers = values[0];
+  const rows = [];
+  for (let i = 1; i < values.length; i++){
+    const row = values[i];
+    if (!row.some(v => v !== '' && v !== null)) continue;
+    const obj = { _row: i }; // 1-based data row index (header is 0)
+    headers.forEach((h, idx) => obj[h] = row[idx]);
+    rows.push(obj);
+  }
+  return rows;
 }
 
 function _appendRow(name, obj){
@@ -274,4 +291,26 @@ function _setRate(curr, rate){
   newRows.push({ Key: 'exchangeRates', Value: JSON.stringify(map) });
   sh.clear(); sh.getRange(1,1,1,2).setValues([["Key","Value"]]);
   if (newRows.length){ sh.getRange(2,1,newRows.length,2).setValues(newRows.map(r => [r.Key, r.Value])); }
+}
+
+function deleteRow(payload){
+  const table = payload.table; const row = Number(payload.row); // 1-based data row index
+  if (!table || !row || row < 1) throw new Error('Invalid table/row');
+  const sh = _ss().getSheetByName(table);
+  const last = sh.getLastRow();
+  if (row+1 > last) throw new Error('Row out of range');
+  sh.deleteRow(row+1); // +1 for header
+  return { ok: true };
+}
+
+function updateRow(payload){
+  const table = payload.table; const row = Number(payload.row); const data = payload.data || {};
+  if (!table || !row || row < 1) throw new Error('Invalid table/row');
+  const sh = _ss().getSheetByName(table);
+  const headers = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
+  Object.keys(data).forEach(key => {
+    const col = headers.indexOf(key);
+    if (col >= 0) sh.getRange(row+1, col+1).setValue(data[key]);
+  });
+  return { ok: true };
 }
