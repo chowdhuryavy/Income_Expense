@@ -133,6 +133,13 @@ function renderTransferInline(){
   const show = state.settings.multiCurrency; $('#trCurrencyWrapInline').classList.toggle('hidden', !show);
 }
 
+function populateCategorySelect(select, type){
+  if (!select) return;
+  const list = (state.settings.categories && state.settings.categories[type]) || [];
+  const opts = list.map(c => `<option value="${c}">${c}</option>`).join('');
+  select.innerHTML = `<option value="" disabled selected>Select ${type} category</option>${opts}`;
+}
+
 // Modals
 const modals = $$('.modal');
 const overlay = $('#modalOverlay');
@@ -148,8 +155,10 @@ overlay.addEventListener('click', closeModals);
 $$('.modal .modal-close').forEach(btn => btn.addEventListener('click', closeModals));
 
 // Open modal buttons
-const addIncomeBtn = $('#btnAddIncome'); if (addIncomeBtn) addIncomeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); location.hash = 'income'; $('#incDate').value = todayISO(); populateAccountSelect($('#incAccountSelect')); toggleCurrencyRow('inc'); openModal('#modalIncome'); });
-const addExpenseBtn = $('#btnAddExpense'); if (addExpenseBtn) addExpenseBtn.addEventListener('click', (e)=>{ e.stopPropagation(); location.hash = 'expense'; $('#expDate').value = todayISO(); populateAccountSelect($('#expAccountSelect')); toggleCurrencyRow('exp'); openModal('#modalExpense'); });
+function openIncomeModal(){ $('#incDate').value = todayISO(); populateAccountSelect($('#incAccountSelect')); populateCategorySelect($('#incCategorySelect'),'income'); toggleCurrencyRow('inc'); openModal('#modalIncome'); }
+function openExpenseModal(){ $('#expDate').value = todayISO(); populateAccountSelect($('#expAccountSelect')); populateCategorySelect($('#expCategorySelect'),'expense'); toggleCurrencyRow('exp'); openModal('#modalExpense'); }
+const addIncomeBtn = $('#btnAddIncome'); if (addIncomeBtn) addIncomeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); openIncomeModal(); });
+const addExpenseBtn = $('#btnAddExpense'); if (addExpenseBtn) addExpenseBtn.addEventListener('click', (e)=>{ e.stopPropagation(); location.hash = 'expense'; navigateTo('expense'); openExpenseModal(); });
 const addAccountBtn = $('#btnAddAccount'); if (addAccountBtn) addAccountBtn.addEventListener('click', (e)=>{ e.stopPropagation(); location.hash = 'accounts'; openModal('#modalAccount'); });
 // removed transfer modal open
 $('#btnAddLentBorrowed').addEventListener('click', ()=> openModal('#modalLentBorrowed'));
@@ -160,27 +169,30 @@ function toggleCurrencyRow(prefix){
 }
 
 // Save handlers
+function resetIncomeForm(){ $('#incAmount').value=''; $('#incNotes').value=''; $('#incCategorySelect').selectedIndex=0; $('#incAccountSelect').selectedIndex=0; }
+function resetExpenseForm(){ $('#expAmount').value=''; $('#expNotes').value=''; $('#expCategorySelect').selectedIndex=0; $('#expAccountSelect').selectedIndex=0; }
+
 $('#saveIncome').addEventListener('click', async ()=>{
   const row = {
     Date: $('#incDate').value,
     Amount: Number($('#incAmount').value||0),
-    Category: $('#incCategory').value,
+    Category: $('#incCategorySelect').value,
     Account: $('#incAccountSelect').value,
     Notes: $('#incNotes').value,
     Currency: state.settings.multiCurrency ? ($('#incCurrency').value||state.settings.baseCurrency) : state.settings.baseCurrency
   };
-  await api.addIncome(row); await refreshAll(); closeModals();
+  await api.addIncome(row); await refreshAll(); resetIncomeForm(); closeModals();
 });
 $('#saveExpense').addEventListener('click', async ()=>{
   const row = {
     Date: $('#expDate').value,
     Amount: Number($('#expAmount').value||0),
-    Category: $('#expCategory').value,
+    Category: $('#expCategorySelect').value,
     Account: $('#expAccountSelect').value,
     Notes: $('#expNotes').value,
     Currency: state.settings.multiCurrency ? ($('#expCurrency').value||state.settings.baseCurrency) : state.settings.baseCurrency
   };
-  await api.addExpense(row); await refreshAll(); closeModals();
+  await api.addExpense(row); await refreshAll(); resetExpenseForm(); closeModals();
 });
 $('#saveAccount').addEventListener('click', async ()=>{
   const row = { AccountName: $('#accName').value, Type: $('#accType').value, Balance: Number($('#accInitialBalance').value||0) };
@@ -257,7 +269,7 @@ async function renderTable(table, wrapSelector){
       location.hash = 'income'; navigateTo('income');
       $('#incDate').value = getVal('Date');
       $('#incAmount').value = getVal('Amount');
-      $('#incCategory').value = getVal('Category');
+      $('#incCategorySelect').value = getVal('Category');
       populateAccountSelect($('#incAccountSelect')); $('#incAccountSelect').value = getVal('Account');
       $('#incNotes').value = getVal('Notes');
       openModal('#modalIncome');
@@ -265,7 +277,7 @@ async function renderTable(table, wrapSelector){
       location.hash = 'expense'; navigateTo('expense');
       $('#expDate').value = getVal('Date');
       $('#expAmount').value = getVal('Amount');
-      $('#expCategory').value = getVal('Category');
+      $('#expCategorySelect').value = getVal('Category');
       populateAccountSelect($('#expAccountSelect')); $('#expAccountSelect').value = getVal('Account');
       $('#expNotes').value = getVal('Notes');
       openModal('#modalExpense');
@@ -372,8 +384,8 @@ $$('.filters .chip').forEach(chip => chip.addEventListener('click', () => {
 }));
 
 function bindActionButtons(){
-  const addIncomeBtn = $('#btnAddIncome'); if (addIncomeBtn) addIncomeBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); $('#incDate').value = todayISO(); populateAccountSelect($('#incAccountSelect')); toggleCurrencyRow('inc'); openModal('#modalIncome'); };
-  const addExpenseBtn = $('#btnAddExpense'); if (addExpenseBtn) addExpenseBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'expense'; navigateTo('expense'); $('#expDate').value = todayISO(); populateAccountSelect($('#expAccountSelect')); toggleCurrencyRow('exp'); openModal('#modalExpense'); };
+  const addIncomeBtn = $('#btnAddIncome'); if (addIncomeBtn) addIncomeBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); openIncomeModal(); };
+  const addExpenseBtn = $('#btnAddExpense'); if (addExpenseBtn) addExpenseBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'expense'; navigateTo('expense'); openExpenseModal(); };
   const addAccountBtn = $('#btnAddAccount'); if (addAccountBtn) addAccountBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'accounts'; navigateTo('accounts'); openModal('#modalAccount'); };
   const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); await renderTable('Income', '#incomeTableWrap'); };
   const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'expense'; navigateTo('expense'); await renderTable('Expense', '#expenseTableWrap'); };

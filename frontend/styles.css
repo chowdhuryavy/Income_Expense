@@ -154,7 +154,9 @@ canvas { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,25
 .btn.danger { background: linear-gradient(90deg, #dc2626, #ef4444); }
 .icon-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); padding: 8px 10px; border-radius: 10px; cursor: pointer; color: var(--text); }
 .icon-btn:hover { background: rgba(255,255,255,0.12); }
-.select, .input, .textarea { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 9px 12px; width: 100%; outline: none; }
+.select, .input, .textarea { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 9px 12px; width: 100%; outline: none; color: var(--text); }
+.select option { background: var(--surface); color: var(--text); }
+.select:focus, .input:focus, .textarea:focus { border-color: var(--primary-2); box-shadow: 0 0 0 2px rgba(0,210,255,0.15); }
 .textarea { resize: vertical; }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity .2s ease; }
