@@ -129,9 +129,9 @@ overlay.addEventListener('click', closeModals);
 $$('.modal .modal-close').forEach(btn => btn.addEventListener('click', closeModals));
 
 // Open modal buttons
-$('#btnAddIncome').addEventListener('click', ()=>{ $('#incDate').value = todayISO(); populateAccountSelect($('#incAccountSelect')); toggleCurrencyRow('inc'); openModal('#modalIncome'); });
-$('#btnAddExpense').addEventListener('click', ()=>{ $('#expDate').value = todayISO(); populateAccountSelect($('#expAccountSelect')); toggleCurrencyRow('exp'); openModal('#modalExpense'); });
-$('#btnAddAccount').addEventListener('click', ()=> openModal('#modalAccount'));
+const addIncomeBtn = $('#btnAddIncome'); if (addIncomeBtn) addIncomeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); location.hash = 'income'; $('#incDate').value = todayISO(); populateAccountSelect($('#incAccountSelect')); toggleCurrencyRow('inc'); openModal('#modalIncome'); });
+const addExpenseBtn = $('#btnAddExpense'); if (addExpenseBtn) addExpenseBtn.addEventListener('click', (e)=>{ e.stopPropagation(); location.hash = 'expense'; $('#expDate').value = todayISO(); populateAccountSelect($('#expAccountSelect')); toggleCurrencyRow('exp'); openModal('#modalExpense'); });
+const addAccountBtn = $('#btnAddAccount'); if (addAccountBtn) addAccountBtn.addEventListener('click', (e)=>{ e.stopPropagation(); location.hash = 'accounts'; openModal('#modalAccount'); });
 // removed transfer modal open
 $('#btnAddLentBorrowed').addEventListener('click', ()=> openModal('#modalLentBorrowed'));
 
