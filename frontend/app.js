@@ -231,7 +231,7 @@ function closeModals(){
   if (overlay) { overlay.classList.remove('show'); overlay.classList.add('hidden'); }
   modals.forEach(m => { m.classList.remove('show'); m.classList.add('hidden'); });
 }
-overlay.addEventListener('click', closeModals);
+if (overlay) overlay.addEventListener('click', closeModals);
 $$('.modal .modal-close').forEach(btn => btn.addEventListener('click', closeModals));
 
 // Open modal buttons
