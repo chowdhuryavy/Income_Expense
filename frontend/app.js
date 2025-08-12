@@ -274,7 +274,31 @@ function toggleCurrencyRow(prefix){
 function resetIncomeForm(){ $('#incAmount').value=''; $('#incNotes').value=''; $('#incCategorySelect').selectedIndex=0; $('#incAccountSelect').selectedIndex=0; }
 function resetExpenseForm(){ $('#expAmount').value=''; $('#expNotes').value=''; $('#expCategorySelect').selectedIndex=0; $('#expAccountSelect').selectedIndex=0; }
 
-const saveIncomeBtn = $('#saveIncome'); if (saveIncomeBtn) saveIncomeBtn.addEventListener('click', async ()=>{
+function withSpinner(btn, fn){
+  return async ()=>{
+    if (!btn) return fn();
+    const original = btn.innerHTML;
+    btn.innerHTML = original + ' <span class="spinner"></span>';
+    btn.disabled = true;
+    try { await fn(); } finally { btn.disabled = false; btn.innerHTML = original; }
+  };
+}
+
+function showSuccess(message, parentSelector){
+  const parent = parentSelector ? document.querySelector(parentSelector) : document.querySelector('.topbar');
+  if (!parent) return;
+  const div = document.createElement('div');
+  div.className = 'alert';
+  div.style.margin = '8px 0';
+  div.textContent = message;
+  parent.parentNode.insertBefore(div, parent.nextSibling);
+  setTimeout(()=> div.remove(), 2000);
+}
+
+let editContext = { mode: null, table: null, row: null };
+
+// Save handlers with spinner and success
+const saveIncomeBtn = $('#saveIncome'); if (saveIncomeBtn) saveIncomeBtn.addEventListener('click', withSpinner(saveIncomeBtn, async ()=>{
   const row = {
     Date: $('#incDate').value,
     Amount: Number($('#incAmount').value||0),
@@ -283,9 +307,15 @@ const saveIncomeBtn = $('#saveIncome'); if (saveIncomeBtn) saveIncomeBtn.addEven
     Notes: $('#incNotes').value,
     Currency: state.settings.multiCurrency ? ($('#incCurrency').value||state.settings.baseCurrency) : state.settings.baseCurrency
   };
-  await api.addIncome(row); await refreshAll(); resetIncomeForm(); closeModals();
-});
-const saveExpenseBtn = $('#saveExpense'); if (saveExpenseBtn) saveExpenseBtn.addEventListener('click', async ()=>{
+  if (editContext.mode === 'edit' && editContext.table === 'Income'){
+    await api.updateRow('Income', editContext.row, row);
+  } else {
+    await api.addIncome(row);
+  }
+  await refreshAll(); resetIncomeForm(); closeModals(); showSuccess('Income saved'); editContext = { mode: null, table: null, row: null };
+}));
+
+const saveExpenseBtn = $('#saveExpense'); if (saveExpenseBtn) saveExpenseBtn.addEventListener('click', withSpinner(saveExpenseBtn, async ()=>{
   const row = {
     Date: $('#expDate').value,
     Amount: Number($('#expAmount').value||0),
@@ -294,16 +324,21 @@ const saveExpenseBtn = $('#saveExpense'); if (saveExpenseBtn) saveExpenseBtn.add
     Notes: $('#expNotes').value,
     Currency: state.settings.multiCurrency ? ($('#expCurrency').value||state.settings.baseCurrency) : state.settings.baseCurrency
   };
-  await api.addExpense(row); await refreshAll(); resetExpenseForm(); closeModals();
-});
+  if (editContext.mode === 'edit' && editContext.table === 'Expense'){
+    await api.updateRow('Expense', editContext.row, row);
+  } else {
+    await api.addExpense(row);
+  }
+  await refreshAll(); resetExpenseForm(); closeModals(); showSuccess('Expense saved'); editContext = { mode: null, table: null, row: null };
+}));
 
 // Save Account includes card details
-const saveAccountBtn = $('#saveAccount'); if (saveAccountBtn) saveAccountBtn.addEventListener('click', async ()=>{
+const saveAccountBtn = $('#saveAccount'); if (saveAccountBtn) saveAccountBtn.addEventListener('click', withSpinner(saveAccountBtn, async ()=>{
   const row = { AccountName: $('#accName').value, Type: $('#accType').value, Balance: Number($('#accInitialBalance').value||0), 'Card Number': $('#accCardNumber').value, 'Issuer': $('#accIssuer').value };
-  await api.addAccount(row); await refreshAll(); closeModals();
-});
+  await api.addAccount(row); await refreshAll(); closeModals(); showSuccess('Account saved');
+}));
 
-const submitTransferBtn = $('#submitTransferInline'); if (submitTransferBtn) submitTransferBtn.addEventListener('click', async ()=>{
+const submitTransferBtn = $('#submitTransferInline'); if (submitTransferBtn) submitTransferBtn.addEventListener('click', withSpinner(submitTransferBtn, async ()=>{
   const row = {
     FromAccount: $('#trFromSelect').value,
     ToAccount: $('#trToSelect').value,
@@ -312,13 +347,18 @@ const submitTransferBtn = $('#submitTransferInline'); if (submitTransferBtn) sub
     Notes: $('#trNotesInline').value,
     Currency: state.settings.multiCurrency ? ($('#trCurrencyInline').value||state.settings.baseCurrency) : state.settings.baseCurrency
   };
-  await api.addTransfer(row); await refreshAll();
-});
+  await api.addTransfer(row); await refreshAll(); showSuccess('Transfer completed');
+}));
 
-const saveLBBtn = $('#saveLentBorrowed'); if (saveLBBtn) saveLBBtn.addEventListener('click', async ()=>{
+const saveLBBtn = $('#saveLentBorrowed'); if (saveLBBtn) saveLBBtn.addEventListener('click', withSpinner(saveLBBtn, async ()=>{
   const row = { Name: $('#lbName').value, Amount: Number($('#lbAmount').value||0), Date: $('#lbDate').value, Type: $('#lbType').value, Notes: $('#lbNotes').value };
-  await api.addLentBorrowed(row); await refreshAll(); closeModals();
-});
+  if (editContext.mode === 'edit' && editContext.table === 'LentBorrowed'){
+    await api.updateRow('LentBorrowed', editContext.row, row);
+  } else {
+    await api.addLentBorrowed(row);
+  }
+  await refreshAll(); closeModals(); showSuccess('Saved'); editContext = { mode: null, table: null, row: null };
+}));
 
 // View buttons also render filters
 const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.addEventListener('click', async (e)=> {
