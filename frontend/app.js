@@ -233,14 +233,13 @@ async function renderTable(table, wrapSelector){
     <table class="table">
       <thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}<th>Actions</th></tr></thead>
       <tbody>
-        ${rows.map(r => `<tr data-row="${r._row}">${headers.map(h=>`<td>${r[h]??''}</td>`).join('')}<td>
+        ${rows.map(r => `<tr data-row="${r._row}">${headers.map(h=>`<td data-key="${h}">${r[h]??''}</td>`).join('')}<td>
           <button class="btn small" data-edit>Edit</button>
           <button class="btn danger small" data-delete>Delete</button>
         </td></tr>`).join('')}
       </tbody>
     </table>`;
   wrap.innerHTML = html;
-  // bind actions
   wrap.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', async (e) => {
     const tr = e.target.closest('tr'); const row = Number(tr.getAttribute('data-row'));
     if (!confirm('Delete this row?')) return;
@@ -248,9 +247,33 @@ async function renderTable(table, wrapSelector){
   }));
   wrap.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', async (e) => {
     const tr = e.target.closest('tr'); const row = Number(tr.getAttribute('data-row'));
-    const tds = Array.from(tr.children).slice(0, headers.length);
-    const values = {}; headers.forEach((h, idx) => values[h] = prompt(`Edit ${h}`, tds[idx].textContent) ?? tds[idx].textContent);
-    await api.updateRow(table, row, values); await refreshAll(); await renderTable(table, wrapSelector);
+    const getVal = (k) => tr.querySelector(`td[data-key="${k}"]`)?.textContent || '';
+    if (table === 'Income'){
+      location.hash = 'income'; navigateTo('income');
+      $('#incDate').value = getVal('Date');
+      $('#incAmount').value = getVal('Amount');
+      $('#incCategory').value = getVal('Category');
+      populateAccountSelect($('#incAccountSelect')); $('#incAccountSelect').value = getVal('Account');
+      $('#incNotes').value = getVal('Notes');
+      openModal('#modalIncome');
+      // saving will overwrite as a new row; for true update, call updateRow after save
+    } else if (table === 'Expense'){
+      location.hash = 'expense'; navigateTo('expense');
+      $('#expDate').value = getVal('Date');
+      $('#expAmount').value = getVal('Amount');
+      $('#expCategory').value = getVal('Category');
+      populateAccountSelect($('#expAccountSelect')); $('#expAccountSelect').value = getVal('Account');
+      $('#expNotes').value = getVal('Notes');
+      openModal('#modalExpense');
+    } else if (table === 'LentBorrowed'){
+      location.hash = 'lentborrowed'; navigateTo('lentborrowed');
+      $('#lbName').value = getVal('Name');
+      $('#lbAmount').value = getVal('Amount');
+      $('#lbDate').value = getVal('Date');
+      $('#lbType').value = getVal('Type');
+      $('#lbNotes').value = getVal('Notes');
+      openModal('#modalLentBorrowed');
+    }
   }));
 }
 
