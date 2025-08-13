@@ -90,6 +90,9 @@ routes.forEach(btn => btn.addEventListener('click', async (e) => {
 const themeToggle = $('#themeToggle');
 if (themeToggle) themeToggle.addEventListener('click', () => toggleTheme());
 const sidebarThemeToggle = $('#sidebarThemeToggle'); if (sidebarThemeToggle) sidebarThemeToggle.addEventListener('click', ()=> toggleTheme());
+// Header selects no longer exist; keep safe refs if present elsewhere
+const langSel = $('#languageSelect');
+const currSel = $('#currencySymbolSelect');
 
 function setLanguage(lang){ translatePage(lang); state.settings.language = lang; $('#settingsLanguage').value = lang; saveSettings(); }
 
@@ -503,7 +506,7 @@ async function saveSettings(){ await api.updateSettings(state.settings); }
 const bDark = document.getElementById('settingsThemeDark'); if (bDark) bDark.addEventListener('click', ()=>{ if (document.body.classList.contains('theme-light')) toggleTheme(); });
 const bLight = document.getElementById('settingsThemeLight'); if (bLight) bLight.addEventListener('click', ()=>{ if (!document.body.classList.contains('theme-light')) toggleTheme(); });
 const sLang = document.getElementById('settingsLanguage'); if (sLang) sLang.addEventListener('change', e => setLanguage(e.target.value));
-const sCurr = document.getElementById('settingsCurrencySymbol'); if (sCurr) sCurr.addEventListener('input', e => { state.settings.currencySymbol = e.target.value; saveSettings(); updateCards(); });
+const sCurr = document.getElementById('settingsCurrencySymbol'); if (sCurr) sCurr.addEventListener('input', e => { state.settings.currencySymbol = e.target.value; saveSettings(); });
 const sDateF = document.getElementById('settingsDateFormat'); if (sDateF) sDateF.addEventListener('change', e => { state.settings.dateFormat = e.target.value; saveSettings(); });
 const sNumF = document.getElementById('settingsNumberFormat'); if (sNumF) sNumF.addEventListener('change', e => { state.settings.numberFormat = e.target.value; saveSettings(); updateCards(); });
 const sAuto = document.getElementById('settingsAutoSync'); if (sAuto) sAuto.addEventListener('change', e => { state.settings.autoSync = e.target.checked; saveSettings(); });
@@ -528,6 +531,16 @@ const btnExportCSV = $('#btnExportCSV'); if (btnExportCSV) btnExportCSV.addEvent
 const btnExportXLSX = $('#btnExportXLSX'); if (btnExportXLSX) btnExportXLSX.addEventListener('click', async ()=>{
   const data = await api.exportBackup(); download(`backup-${Date.now()}.json`, JSON.stringify(data, null, 2));
 });
+
+function bindActionButtons(){
+  const addIncomeBtn = $('#btnAddIncome'); if (addIncomeBtn) addIncomeBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); openIncomeModal(); };
+  const addExpenseBtn = $('#btnAddExpense'); if (addExpenseBtn) addExpenseBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'expense'; navigateTo('expense'); openExpenseModal(); };
+  const addAccountBtn = $('#btnAddAccount'); if (addAccountBtn) addAccountBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'accounts'; navigateTo('accounts'); openModal('#modalAccount'); };
+  const addLBBtn = $('#btnAddLentBorrowed'); if (addLBBtn) addLBBtn.onclick = ()=> openModal('#modalLentBorrowed');
+  const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'income-view'; navigateTo('income-view'); const wrap = $('#incomeViewTable'); showLoading(wrap); await renderTable('Income', '#incomeViewTable'); renderFilters('#incomeViewFilters','Income'); };
+  const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'expense-view'; navigateTo('expense-view'); const wrap = $('#expenseViewTable'); showLoading(wrap); await renderTable('Expense', '#expenseViewTable'); renderFilters('#expenseViewFilters','Expense'); };
+  const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'lentborrowed-view'; navigateTo('lentborrowed-view'); const wrap = $('#lentBorrowedViewTable'); showLoading(wrap); await renderTable('LentBorrowed', '#lentBorrowedViewTable'); renderFilters('#lentBorrowedViewFilters','LentBorrowed'); };
+}
 
 // Start at dashboard and collapse sidebar
 window.addEventListener('DOMContentLoaded', async ()=>{
