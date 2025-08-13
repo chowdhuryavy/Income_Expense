@@ -491,4 +491,14 @@ const btnExportCSV = $('#btnExportCSV'); if (btnExportCSV) btnExportCSV.addEvent
   download(`backup-${Date.now()}.csv`, csv, 'text/csv');
 });
 const btnExportXLSX = $('#btnExportXLSX'); if (btnExportXLSX) btnExportXLSX.addEventListener('click', async ()=>{
-  const data = await api.exportBackup(); download(`
+  const data = await api.exportBackup(); download(`backup-${Date.now()}.json`, JSON.stringify(data, null, 2));
+});
+
+// Start at dashboard and collapse sidebar
+window.addEventListener('DOMContentLoaded', async ()=>{
+  if (Charts && Charts.initCharts) await Charts.initCharts();
+  location.hash = 'dashboard'; navigateTo('dashboard'); updateTabLabel('dashboard'); setSidebarExpanded(false);
+  bindActionButtons();
+  bindActionCards();
+  try { await refreshAll(); } catch (e) { console.error(e); alert('Configure API URL in frontend/api.js and deploy Apps Script Web App.'); }
+});
