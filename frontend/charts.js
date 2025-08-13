@@ -17,22 +17,35 @@ function baseChartOptions() {
     },
     elements: {
       point: { radius: 1.5 },
-      line: { borderWidth: 1.5 },
+      line: { borderWidth: 1.2 },
       bar: { borderWidth: 0 }
     }
   };
 }
 
-export function initCharts(){
+function ensureChartJs(){
+  if (typeof window.Chart !== 'undefined') return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js';
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Failed to load Chart.js'));
+    document.head.appendChild(s);
+  });
+}
+
+export async function initCharts(){
+  try { await ensureChartJs(); } catch (e){ console.error(e); return; }
   const ctxLine = document.getElementById('chartLine');
   const ctxBar = document.getElementById('chartBar');
   const ctxPie = document.getElementById('chartPie');
   const ctxDonut = document.getElementById('chartDonut');
   const ctxStacked = document.getElementById('chartStacked');
+  if (!ctxLine || !ctxBar || !ctxPie || !ctxDonut || !ctxStacked) return;
 
   chartLine = new Chart(ctxLine, {
     type: 'line',
-    data: { labels: [], datasets: [{ label: 'Net', data: [], borderColor: '#3a7bd5', backgroundColor: 'rgba(58,123,213,.2)', fill: true }] },
+    data: { labels: [], datasets: [{ label: 'Net', data: [], borderColor: '#3a7bd5', backgroundColor: 'rgba(58,123,213,.15)', fill: true }] },
     options: baseChartOptions()
   });
   chartBar = new Chart(ctxBar, {
@@ -55,12 +68,13 @@ export function initCharts(){
 }
 
 export function refreshCharts(range = 'this_month'){
+  if (!chartLine) return;
   const inc = filterByDateRange(state.income, range);
   const exp = filterByDateRange(state.expense, range);
 
   const byMonth = (rows) => {
     const m = new Map();
-    rows.forEach(r => { const d = new Date(r.Date || r.date); const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; m.set(key, (m.get(key)||0) + Number(r.Amount||0)); });
+    rows.forEach(r => { const d = new Date(r.Date || r.date); if (isNaN(d)) return; const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; m.set(key, (m.get(key)||0) + Number(r.Amount||0)); });
     return Array.from(m.entries()).sort(([a],[b]) => a.localeCompare(b));
   };
 
@@ -84,6 +98,7 @@ export function refreshCharts(range = 'this_month'){
 }
 
 export function refreshChartTheme(){
+  if (!chartLine) return;
   const opts = baseChartOptions();
   [chartLine, chartBar, chartPie, chartDonut, chartStacked].forEach(ch => { if (!ch) return; ch.options = { ...ch.options, ...opts }; ch.update(); });
 }
