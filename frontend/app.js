@@ -150,7 +150,6 @@ function formatLocalDate(dStr){
 // Filters
 function renderFilters(containerSelector, table){
   const el = $(containerSelector); if (!el) return;
-  el.classList.remove('hidden');
   el.innerHTML = `
     <input type="date" class="input" data-filter-from />
     <input type="date" class="input" data-filter-to />
@@ -161,12 +160,10 @@ function renderFilters(containerSelector, table){
     const from = el.querySelector('[data-filter-from]').value;
     const to = el.querySelector('[data-filter-to]').value;
     const q = (el.querySelector('[data-filter-q]').value||'').toLowerCase();
-    const wrapSelector = table==='Income' ? '#incomeTableWrap' : table==='Expense' ? '#expenseTableWrap' : '#lentBorrowedTableWrap';
+    const wrapSelector = table==='Income' ? '#incomeViewTable' : table==='Expense' ? '#expenseViewTable' : '#lentBorrowedViewTable';
     const wrap = $(wrapSelector);
-    // fetch fresh and filter on client
     const { rows } = await api.getTable(table);
     const filtered = rows.filter(r => {
-      // date
       const d = new Date(r.Date);
       const inRange = (!from || d >= new Date(from)) && (!to || d <= new Date(to));
       const hay = JSON.stringify(r).toLowerCase();
@@ -576,13 +573,13 @@ async function guarded(fn){ if (requestLock) return; requestLock = true; try { a
 // Bind action cards
 function bindActionCards(){
   const addInc = $('#cardAddIncome'); if (addInc) addInc.onclick = ()=> openIncomeModal();
-  const viewInc = $('#cardViewIncome'); if (viewInc) viewInc.onclick = ()=> guarded(async ()=>{ const sec = document.querySelector('#route-income'); if (sec) sec.querySelector('.action-cards')?.classList.add('hidden'); const wrap = $('#incomeTableWrap'); showLoading(wrap); await renderTable('Income', '#incomeTableWrap'); renderFilters('#incomeFilters','Income'); });
+  const viewInc = $('#cardViewIncome'); if (viewInc) viewInc.onclick = ()=> guarded(async ()=>{ location.hash = 'income-view'; navigateTo('income-view'); const wrap = $('#incomeViewTable'); showLoading(wrap); await renderTable('Income', '#incomeViewTable'); renderFilters('#incomeViewFilters','Income'); });
   const addExp = $('#cardAddExpense'); if (addExp) addExp.onclick = ()=> openExpenseModal();
-  const viewExp = $('#cardViewExpense'); if (viewExp) viewExp.onclick = ()=> guarded(async ()=>{ const sec = document.querySelector('#route-expense'); if (sec) sec.querySelector('.action-cards')?.classList.add('hidden'); const wrap = $('#expenseTableWrap'); showLoading(wrap); await renderTable('Expense', '#expenseTableWrap'); renderFilters('#expenseFilters','Expense'); });
+  const viewExp = $('#cardViewExpense'); if (viewExp) viewExp.onclick = ()=> guarded(async ()=>{ location.hash = 'expense-view'; navigateTo('expense-view'); const wrap = $('#expenseViewTable'); showLoading(wrap); await renderTable('Expense', '#expenseViewTable'); renderFilters('#expenseViewFilters','Expense'); });
   const addAcc = $('#cardAddAccount'); if (addAcc) addAcc.onclick = ()=> openModal('#modalAccount');
-  const viewAcc = $('#cardViewAccounts'); if (viewAcc) viewAcc.onclick = ()=> {};
+  const viewAcc = $('#cardViewAccounts'); if (viewAcc) viewAcc.onclick = ()=> guarded(async ()=>{ location.hash = 'accounts-view'; navigateTo('accounts-view'); const wrap = $('#accountsViewTable'); showLoading(wrap); await renderTable('Accounts', '#accountsViewTable'); /* optional filters */ });
   const addLB = $('#cardAddLB'); if (addLB) addLB.onclick = ()=> openModal('#modalLentBorrowed');
-  const viewLB = $('#cardViewLB'); if (viewLB) viewLB.onclick = ()=> guarded(async ()=>{ const sec = document.querySelector('#route-lentborrowed'); if (sec) sec.querySelector('.action-cards')?.classList.add('hidden'); const wrap = $('#lentBorrowedTableWrap'); showLoading(wrap); await renderTable('LentBorrowed', '#lentBorrowedTableWrap'); renderFilters('#lentBorrowedFilters','LentBorrowed'); });
+  const viewLB = $('#cardViewLB'); if (viewLB) viewLB.onclick = ()=> guarded(async ()=>{ location.hash = 'lentborrowed-view'; navigateTo('lentborrowed-view'); const wrap = $('#lentBorrowedViewTable'); showLoading(wrap); await renderTable('LentBorrowed', '#lentBorrowedViewTable'); renderFilters('#lentBorrowedViewFilters','LentBorrowed'); });
 }
 
 window.addEventListener('DOMContentLoaded', async ()=>{

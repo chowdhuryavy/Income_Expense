@@ -93,8 +93,6 @@
           <button id="cardAddIncome" class="action-card primary"><i class="fa-solid fa-plus"></i><div>Add Income</div></button>
           <button id="cardViewIncome" class="action-card"><i class="fa-solid fa-table"></i><div>View Income</div></button>
         </div>
-        <div id="incomeFilters" class="filters hidden"></div>
-        <div id="incomeTableWrap" class="table-wrap hidden"></div>
       </section>
 
       <section id="route-expense" class="route">
@@ -102,8 +100,6 @@
           <button id="cardAddExpense" class="action-card danger"><i class="fa-solid fa-plus"></i><div>Add Expense</div></button>
           <button id="cardViewExpense" class="action-card"><i class="fa-solid fa-table"></i><div>View Expense</div></button>
         </div>
-        <div id="expenseFilters" class="filters hidden"></div>
-        <div id="expenseTableWrap" class="table-wrap hidden"></div>
       </section>
 
       <section id="route-accounts" class="route">
@@ -112,6 +108,38 @@
           <button id="cardViewAccounts" class="action-card"><i class="fa-solid fa-table"></i><div>View Accounts</div></button>
         </div>
         <div id="accountsCards" class="cards"></div>
+      </section>
+
+      <section id="route-lentborrowed" class="route">
+        <div class="action-cards">
+          <button id="cardAddLB" class="action-card"><i class="fa-solid fa-plus"></i><div>Add Lent/Borrowed</div></button>
+          <button id="cardViewLB" class="action-card"><i class="fa-solid fa-table"></i><div>View Lent/Borrowed</div></button>
+        </div>
+      </section>
+
+      <!-- View-only routes -->
+      <section id="route-income-view" class="route">
+        <div class="section-header"><h2>Income</h2></div>
+        <div id="incomeViewFilters" class="filters"></div>
+        <div id="incomeViewTable" class="table-wrap"></div>
+      </section>
+
+      <section id="route-expense-view" class="route">
+        <div class="section-header"><h2>Expense</h2></div>
+        <div id="expenseViewFilters" class="filters"></div>
+        <div id="expenseViewTable" class="table-wrap"></div>
+      </section>
+
+      <section id="route-lentborrowed-view" class="route">
+        <div class="section-header"><h2>Lent & Borrowed</h2></div>
+        <div id="lentBorrowedViewFilters" class="filters"></div>
+        <div id="lentBorrowedViewTable" class="table-wrap"></div>
+      </section>
+
+      <section id="route-accounts-view" class="route">
+        <div class="section-header"><h2>Accounts</h2></div>
+        <div id="accountsViewFilters" class="filters"></div>
+        <div id="accountsViewTable" class="table-wrap"></div>
       </section>
 
       <section id="route-transfer" class="route">
@@ -149,15 +177,6 @@
           </div>
         </div>
         <div id="transfersTableWrap" class="table-wrap hidden"></div>
-      </section>
-
-      <section id="route-lentborrowed" class="route">
-        <div class="action-cards">
-          <button id="cardAddLB" class="action-card"><i class="fa-solid fa-plus"></i><div>Add Lent/Borrowed</div></button>
-          <button id="cardViewLB" class="action-card"><i class="fa-solid fa-table"></i><div>View Lent/Borrowed</div></button>
-        </div>
-        <div id="lentBorrowedFilters" class="filters hidden"></div>
-        <div id="lentBorrowedTableWrap" class="table-wrap hidden"></div>
       </section>
 
       <section id="route-settings" class="route">
