@@ -153,6 +153,11 @@ function renderFilters(containerSelector, table){
   const categoryOptions = (state.settings.categories && (table==='Income' ? state.settings.categories.income : table==='Expense' ? state.settings.categories.expense : [])) || [];
   const accountOptions = state.accounts.map(a => a['Account Name']);
   el.innerHTML = `
+    <div class="chips">
+      <button class="chip" data-range="this_month">This Month</button>
+      <button class="chip" data-range="last_month">Last Month</button>
+      <button class="chip" data-range="this_year">This Year</button>
+    </div>
     <input type="date" class="input" data-filter-from />
     <input type="date" class="input" data-filter-to />
     <select class="select" data-filter-category><option value="">All Categories</option>${categoryOptions.map(c=>`<option>${c}</option>`).join('')}</select>
@@ -160,6 +165,20 @@ function renderFilters(containerSelector, table){
     <input type="search" class="input" placeholder="Search" data-filter-q />
     <button class="btn small" data-apply><i class="fa-solid fa-filter"></i> Apply</button>
     <button class="btn small" data-clear><i class="fa-solid fa-eraser"></i> Clear</button>`;
+  const setRange = (range)=>{
+    const now = new Date();
+    let start = new Date(now.getFullYear(), now.getMonth(), 1);
+    let end = new Date(now.getFullYear(), now.getMonth()+1, 0);
+    if (range === 'last_month'){
+      start = new Date(now.getFullYear(), now.getMonth()-1, 1);
+      end = new Date(now.getFullYear(), now.getMonth(), 0);
+    } else if (range === 'this_year'){
+      start = new Date(now.getFullYear(), 0, 1);
+      end = new Date(now.getFullYear(), 11, 31);
+    }
+    el.querySelector('[data-filter-from]').value = formatLocalDate(start);
+    el.querySelector('[data-filter-to]').value = formatLocalDate(end);
+  };
   const apply = async ()=>{
     const from = el.querySelector('[data-filter-from]').value;
     const to = el.querySelector('[data-filter-to]').value;
@@ -186,13 +205,11 @@ function renderFilters(containerSelector, table){
       </td></tr>`;
     }).join('');
   };
+  el.querySelectorAll('.chip').forEach(ch => ch.onclick = ()=>{ el.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); ch.classList.add('active'); setRange(ch.getAttribute('data-range')); apply(); });
   el.querySelector('[data-apply]').onclick = apply;
-  el.querySelector('[data-clear]').onclick = ()=>{ el.querySelector('[data-filter-from]').value=''; el.querySelector('[data-filter-to]').value=''; el.querySelector('[data-filter-q]').value=''; el.querySelector('[data-filter-category]').value=''; el.querySelector('[data-filter-account]').value=''; apply(); };
+  el.querySelector('[data-clear]').onclick = ()=>{ el.querySelector('[data-filter-from]').value=''; el.querySelector('[data-filter-to]').value=''; el.querySelector('[data-filter-q]').value=''; el.querySelector('[data-filter-category]').value=''; el.querySelector('[data-filter-account]').value=''; el.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); apply(); };
   // default to current month
-  const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), 1); const end = new Date(now.getFullYear(), now.getMonth()+1, 0);
-  el.querySelector('[data-filter-from]').value = formatLocalDate(start);
-  el.querySelector('[data-filter-to]').value = formatLocalDate(end);
-  apply();
+  setRange('this_month'); apply();
 }
 
 function renderAccounts(){
