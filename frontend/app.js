@@ -314,6 +314,8 @@ function showSuccess(message, parentSelector){
   setTimeout(()=> div.remove(), 2000);
 }
 
+function showLoading(target){ if (!target) return; target.innerHTML = '<div class="alert" style="opacity:.8;">Loading...</div>'; }
+
 let editContext = { mode: null, table: null, row: null };
 
 // Save handlers with spinner and success
@@ -540,6 +542,17 @@ function bindActionButtons(){
   const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'income-view'; navigateTo('income-view'); const wrap = $('#incomeViewTable'); showLoading(wrap); await renderTable('Income', '#incomeViewTable'); renderFilters('#incomeViewFilters','Income'); };
   const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'expense-view'; navigateTo('expense-view'); const wrap = $('#expenseViewTable'); showLoading(wrap); await renderTable('Expense', '#expenseViewTable'); renderFilters('#expenseViewFilters','Expense'); };
   const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.onclick = async (e)=>{ e.stopPropagation(); location.hash = 'lentborrowed-view'; navigateTo('lentborrowed-view'); const wrap = $('#lentBorrowedViewTable'); showLoading(wrap); await renderTable('LentBorrowed', '#lentBorrowedViewTable'); renderFilters('#lentBorrowedViewFilters','LentBorrowed'); };
+}
+
+function bindActionCards(){
+  const addInc = $('#cardAddIncome'); if (addInc) addInc.onclick = ()=> openIncomeModal();
+  const viewInc = $('#cardViewIncome'); if (viewInc) viewInc.onclick = async ()=>{ location.hash = 'income-view'; navigateTo('income-view'); const wrap = $('#incomeViewTable'); showLoading(wrap); await renderTable('Income', '#incomeViewTable'); renderFilters('#incomeViewFilters','Income'); };
+  const addExp = $('#cardAddExpense'); if (addExp) addExp.onclick = ()=> openExpenseModal();
+  const viewExp = $('#cardViewExpense'); if (viewExp) viewExp.onclick = async ()=>{ location.hash = 'expense-view'; navigateTo('expense-view'); const wrap = $('#expenseViewTable'); showLoading(wrap); await renderTable('Expense', '#expenseViewTable'); renderFilters('#expenseViewFilters','Expense'); };
+  const addAcc = $('#cardAddAccount'); if (addAcc) addAcc.onclick = ()=> openModal('#modalAccount');
+  const viewAcc = $('#cardViewAccounts'); if (viewAcc) viewAcc.onclick = async ()=>{ location.hash = 'accounts-view'; navigateTo('accounts-view'); renderAccountsTable && renderAccountsTable(); };
+  const addLB = $('#cardAddLB'); if (addLB) addLB.onclick = ()=> openModal('#modalLentBorrowed');
+  const viewLB = $('#cardViewLB'); if (viewLB) viewLB.onclick = async ()=>{ location.hash = 'lentborrowed-view'; navigateTo('lentborrowed-view'); const wrap = $('#lentBorrowedViewTable'); showLoading(wrap); await renderTable('LentBorrowed', '#lentBorrowedViewTable'); renderFilters('#lentBorrowedViewFilters','LentBorrowed'); };
 }
 
 // Start at dashboard and collapse sidebar
