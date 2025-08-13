@@ -464,19 +464,54 @@ function computeAccountsTotal(){
   return (__stateRef.accounts || []).reduce((a, acc) => a + Number(acc.Balance || 0), 0);
 }
 
+function applySettingsToUI(){
+  const s = state.settings;
+  document.body.classList.toggle('theme-light', s.theme === 'light');
+  document.body.classList.toggle('theme-dark', s.theme !== 'light');
+  if (langSel) langSel.value = s.language; translatePage(s.language);
+  if (currSel) currSel.value = s.currencySymbol;
+  const sl = document.getElementById('settingsLanguage'); if (sl) sl.value = s.language;
+  const sc = document.getElementById('settingsCurrencySymbol'); if (sc) sc.value = s.currencySymbol;
+  const sdf = document.getElementById('settingsDateFormat'); if (sdf) sdf.value = s.dateFormat;
+  const snf = document.getElementById('settingsNumberFormat'); if (snf) snf.value = s.numberFormat;
+  const sau = document.getElementById('settingsAutoSync'); if (sau) sau.checked = s.autoSync;
+  const sn = document.getElementById('settingsNotifications'); if (sn) sn.checked = s.notifications;
+  const smc = document.getElementById('settingsMultiCurrency'); if (smc) smc.checked = s.multiCurrency;
+  const sbc = document.getElementById('settingsBaseCurrency'); if (sbc) sbc.value = s.baseCurrency;
+  const scat = document.getElementById('settingsCategories'); if (scat) scat.value = JSON.stringify(s.categories, null, 2);
+  const sat = document.getElementById('settingsAccountTypes'); if (sat) sat.value = s.accountTypes.join(',');
+  // New settings
+  document.querySelectorAll('.chk-card').forEach(cb => { cb.checked = s.dashboardPrefs.cards.includes(cb.value); });
+  document.querySelectorAll('.chk-chart').forEach(cb => { cb.checked = s.dashboardPrefs.charts.includes(cb.value); });
+  const pc = document.getElementById('settingsPrimaryColor'); if (pc) pc.value = s.themeColors.primary;
+  const ac = document.getElementById('settingsAccentColor'); if (ac) ac.value = s.themeColors.accent;
+  const dr = document.getElementById('settingsDefaultRange'); if (dr) dr.value = s.defaultRange;
+  const dt = document.getElementById('settingsDefaultTab'); if (dt) dt.value = s.defaultTab;
+  const bud = document.getElementById('settingsBudgets'); if (bud) bud.value = JSON.stringify(s.budgets||{}, null, 2);
+  const thr = document.getElementById('settingsThresholds'); if (thr) thr.value = JSON.stringify(s.notificationThresholds||{}, null, 2);
+  const ar = document.getElementById('settingsArchiveMonths'); if (ar) ar.value = s.archiveMonths;
+  // Apply dashboard prefs visibility
+  const cardMap = { total: '#totalBalance', income: '#totalIncome', expense: '#totalExpense', cash: '#cashBalance', credit: '#creditBalance', debit: '#debitBalance' };
+  Object.entries(cardMap).forEach(([key, sel]) => { const el = document.querySelector(sel)?.closest('.card'); if (el) el.style.display = s.dashboardPrefs.cards.includes(key) ? '' : 'none'; });
+  const chartMap = { line: '#chartLine', bar: '#chartBar', pie: '#chartPie', donut: '#chartDonut', stacked: '#chartStacked' };
+  Object.entries(chartMap).forEach(([key, sel]) => { const el = document.querySelector(sel); if (el) el.style.display = s.dashboardPrefs.charts.includes(key) ? '' : 'none'; });
+}
+
+async function saveSettings(){ await api.updateSettings(state.settings); }
+
 // Settings panel wiring
-$('#settingsThemeDark').addEventListener('click', ()=>{ if (document.body.classList.contains('theme-light')) toggleTheme(); });
-$('#settingsThemeLight').addEventListener('click', ()=>{ if (!document.body.classList.contains('theme-light')) toggleTheme(); });
-$('#settingsLanguage').addEventListener('change', e => setLanguage(e.target.value));
-$('#settingsCurrencySymbol').addEventListener('input', e => { state.settings.currencySymbol = e.target.value; saveSettings(); updateCards(); });
-$('#settingsDateFormat').addEventListener('change', e => { state.settings.dateFormat = e.target.value; saveSettings(); });
-$('#settingsNumberFormat').addEventListener('change', e => { state.settings.numberFormat = e.target.value; saveSettings(); updateCards(); });
-$('#settingsAutoSync').addEventListener('change', e => { state.settings.autoSync = e.target.checked; saveSettings(); });
-$('#settingsNotifications').addEventListener('change', e => { state.settings.notifications = e.target.checked; saveSettings(); });
-$('#settingsMultiCurrency').addEventListener('change', e => { state.settings.multiCurrency = e.target.checked; saveSettings(); });
-$('#settingsBaseCurrency').addEventListener('change', e => { state.settings.baseCurrency = e.target.value; saveSettings(); });
-$('#settingsCategories').addEventListener('input', debounce(e => { try { state.settings.categories = JSON.parse(e.target.value); saveSettings(); } catch {} }, 600));
-$('#settingsAccountTypes').addEventListener('input', e => { state.settings.accountTypes = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); saveSettings(); });
+const bDark = document.getElementById('settingsThemeDark'); if (bDark) bDark.addEventListener('click', ()=>{ if (document.body.classList.contains('theme-light')) toggleTheme(); });
+const bLight = document.getElementById('settingsThemeLight'); if (bLight) bLight.addEventListener('click', ()=>{ if (!document.body.classList.contains('theme-light')) toggleTheme(); });
+const sLang = document.getElementById('settingsLanguage'); if (sLang) sLang.addEventListener('change', e => setLanguage(e.target.value));
+const sCurr = document.getElementById('settingsCurrencySymbol'); if (sCurr) sCurr.addEventListener('input', e => { state.settings.currencySymbol = e.target.value; saveSettings(); updateCards(); });
+const sDateF = document.getElementById('settingsDateFormat'); if (sDateF) sDateF.addEventListener('change', e => { state.settings.dateFormat = e.target.value; saveSettings(); });
+const sNumF = document.getElementById('settingsNumberFormat'); if (sNumF) sNumF.addEventListener('change', e => { state.settings.numberFormat = e.target.value; saveSettings(); updateCards(); });
+const sAuto = document.getElementById('settingsAutoSync'); if (sAuto) sAuto.addEventListener('change', e => { state.settings.autoSync = e.target.checked; saveSettings(); });
+const sNotif = document.getElementById('settingsNotifications'); if (sNotif) sNotif.addEventListener('change', e => { state.settings.notifications = e.target.checked; saveSettings(); });
+const sMulti = document.getElementById('settingsMultiCurrency'); if (sMulti) sMulti.addEventListener('change', e => { state.settings.multiCurrency = e.target.checked; saveSettings(); });
+const sBase = document.getElementById('settingsBaseCurrency'); if (sBase) sBase.addEventListener('change', e => { state.settings.baseCurrency = e.target.value; saveSettings(); });
+const sCats = document.getElementById('settingsCategories'); if (sCats) sCats.addEventListener('input', debounce(e => { try { state.settings.categories = JSON.parse(e.target.value); saveSettings(); } catch {} }, 600));
+const sAccTypes = document.getElementById('settingsAccountTypes'); if (sAccTypes) sAccTypes.addEventListener('input', e => { state.settings.accountTypes = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); saveSettings(); });
 
 const btnExportJSON = $('#btnExportJSON'); if (btnExportJSON) btnExportJSON.addEventListener('click', async ()=>{
   const data = await api.exportBackup(); download(`backup-${Date.now()}.json`, JSON.stringify(data, null, 2));
