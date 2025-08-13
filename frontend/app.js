@@ -56,17 +56,28 @@ window.addEventListener('hashchange', () => {
 
 // Routing
 const routes = $$('.menu-item');
+function resetRouteView(route){
+  if (route === 'income'){
+    const sec = document.querySelector('#route-income'); if (!sec) return;
+    const actions = sec.querySelector('.action-cards'); const filt = sec.querySelector('#incomeFilters'); const tbl = sec.querySelector('#incomeTableWrap');
+    if (actions) actions.classList.remove('hidden'); if (filt) filt.classList.add('hidden'); if (tbl) tbl.classList.add('hidden');
+  } else if (route === 'expense'){
+    const sec = document.querySelector('#route-expense'); if (!sec) return;
+    const actions = sec.querySelector('.action-cards'); const filt = sec.querySelector('#expenseFilters'); const tbl = sec.querySelector('#expenseTableWrap');
+    if (actions) actions.classList.remove('hidden'); if (filt) filt.classList.add('hidden'); if (tbl) tbl.classList.add('hidden');
+  } else if (route === 'lentborrowed'){
+    const sec = document.querySelector('#route-lentborrowed'); if (!sec) return;
+    const actions = sec.querySelector('.action-cards'); const filt = sec.querySelector('#lentBorrowedFilters'); const tbl = sec.querySelector('#lentBorrowedTableWrap');
+    if (actions) actions.classList.remove('hidden'); if (filt) filt.classList.add('hidden'); if (tbl) tbl.classList.add('hidden');
+  }
+}
 routes.forEach(btn => btn.addEventListener('click', async (e) => {
   e.stopPropagation();
   const route = btn.getAttribute('data-route');
   location.hash = route; // triggers hashchange + navigate
   setSidebarExpanded(false);
   closeModals();
-  try {
-    if (route === 'income') await renderTable('Income', '#incomeTableWrap');
-    if (route === 'expense') await renderTable('Expense', '#expenseTableWrap');
-    if (route === 'lentborrowed') await renderTable('LentBorrowed', '#lentBorrowedTableWrap');
-  } catch (err) { console.warn('Navigation data load failed:', err); }
+  resetRouteView(route);
 }));
 
 // Topbar theme and language
@@ -397,6 +408,10 @@ const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.addEventLi
 });
 
 async function renderTable(table, wrapSelector){
+  // hide action cards for the current section
+  if (wrapSelector.includes('income')){ const actions = document.querySelector('#route-income .action-cards'); if (actions) actions.classList.add('hidden'); }
+  if (wrapSelector.includes('expense')){ const actions = document.querySelector('#route-expense .action-cards'); if (actions) actions.classList.add('hidden'); }
+  if (wrapSelector.includes('lentBorrowed')){ const actions = document.querySelector('#route-lentborrowed .action-cards'); if (actions) actions.classList.add('hidden'); }
   const wrap = $(wrapSelector); wrap.classList.remove('hidden');
   let data;
   try { data = await api.getTable(table); } catch (e){ console.error('Failed to load table', table, e); wrap.innerHTML = `<div style="padding:12px;">Failed to load ${table}</div>`; return; }
@@ -561,13 +576,13 @@ async function guarded(fn){ if (requestLock) return; requestLock = true; try { a
 // Bind action cards
 function bindActionCards(){
   const addInc = $('#cardAddIncome'); if (addInc) addInc.onclick = ()=> openIncomeModal();
-  const viewInc = $('#cardViewIncome'); if (viewInc) viewInc.onclick = ()=> guarded(async ()=>{ const wrap = $('#incomeTableWrap'); showLoading(wrap); await renderTable('Income', '#incomeTableWrap'); renderFilters('#incomeFilters','Income'); });
+  const viewInc = $('#cardViewIncome'); if (viewInc) viewInc.onclick = ()=> guarded(async ()=>{ const sec = document.querySelector('#route-income'); if (sec) sec.querySelector('.action-cards')?.classList.add('hidden'); const wrap = $('#incomeTableWrap'); showLoading(wrap); await renderTable('Income', '#incomeTableWrap'); renderFilters('#incomeFilters','Income'); });
   const addExp = $('#cardAddExpense'); if (addExp) addExp.onclick = ()=> openExpenseModal();
-  const viewExp = $('#cardViewExpense'); if (viewExp) viewExp.onclick = ()=> guarded(async ()=>{ const wrap = $('#expenseTableWrap'); showLoading(wrap); await renderTable('Expense', '#expenseTableWrap'); renderFilters('#expenseFilters','Expense'); });
+  const viewExp = $('#cardViewExpense'); if (viewExp) viewExp.onclick = ()=> guarded(async ()=>{ const sec = document.querySelector('#route-expense'); if (sec) sec.querySelector('.action-cards')?.classList.add('hidden'); const wrap = $('#expenseTableWrap'); showLoading(wrap); await renderTable('Expense', '#expenseTableWrap'); renderFilters('#expenseFilters','Expense'); });
   const addAcc = $('#cardAddAccount'); if (addAcc) addAcc.onclick = ()=> openModal('#modalAccount');
-  const viewAcc = $('#cardViewAccounts'); if (viewAcc) viewAcc.onclick = ()=> guarded(async ()=>{ /* Accounts already visible as cards; future table view can be added */ });
+  const viewAcc = $('#cardViewAccounts'); if (viewAcc) viewAcc.onclick = ()=> {};
   const addLB = $('#cardAddLB'); if (addLB) addLB.onclick = ()=> openModal('#modalLentBorrowed');
-  const viewLB = $('#cardViewLB'); if (viewLB) viewLB.onclick = ()=> guarded(async ()=>{ const wrap = $('#lentBorrowedTableWrap'); showLoading(wrap); await renderTable('LentBorrowed', '#lentBorrowedTableWrap'); renderFilters('#lentBorrowedFilters','LentBorrowed'); });
+  const viewLB = $('#cardViewLB'); if (viewLB) viewLB.onclick = ()=> guarded(async ()=>{ const sec = document.querySelector('#route-lentborrowed'); if (sec) sec.querySelector('.action-cards')?.classList.add('hidden'); const wrap = $('#lentBorrowedTableWrap'); showLoading(wrap); await renderTable('LentBorrowed', '#lentBorrowedTableWrap'); renderFilters('#lentBorrowedFilters','LentBorrowed'); });
 }
 
 window.addEventListener('DOMContentLoaded', async ()=>{
