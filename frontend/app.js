@@ -95,7 +95,7 @@ if (btnCurr) btnCurr.onclick = ()=>{
 };
 
 // Save Settings button
-const btnSaveSettings = $('#btnSaveSettings'); if (btnSaveSettings) btnSaveSettings.onclick = ()=> saveSettings();
+const btnSaveSettings = $('#btnSaveSettings'); if (btnSaveSettings) btnSaveSettings.onclick = async ()=>{ await saveSettings(); showSuccess('Settings saved'); };
 
 function toggleTheme(target){
   const isLight = document.body.classList.toggle('theme-light');
@@ -202,7 +202,7 @@ function renderAccounts(){
     const found = rows.find(r => r['Account Name'] === name);
     if (!found) return;
     if (!confirm('Delete this account?')) return;
-    await api.deleteRow('Accounts', found._row); await refreshAll();
+    await api.deleteRow('Accounts', found._row); await refreshAll(); showSuccess('Account deleted');
   });
   wrap.querySelectorAll('[data-edit-account]').forEach(btn => btn.onclick = async (e)=>{
     const name = e.currentTarget.getAttribute('data-name');
@@ -410,18 +410,18 @@ async function renderTable(table, wrapSelector){
     const ed = e.target.closest('[data-edit]');
     if (!del && !ed) return;
     const tr = e.target.closest('tr'); const row = Number(tr.getAttribute('data-row'));
-    if (del){ if (!confirm('Delete this row?')) return; await api.deleteRow(table, row); await refreshAll(); await renderTable(table, wrapSelector); return; }
+    if (del){ if (!confirm('Delete this row?')) return; await api.deleteRow(table, row); await refreshAll(); await renderTable(table, wrapSelector); showSuccess('Deleted'); return; }
     if (ed){
       const getVal = (k) => tr.querySelector(`td[data-key="${k}"]`)?.textContent || '';
       if (table === 'Income'){
         location.hash = 'income'; navigateTo('income');
-        $('#incDate').value = getVal('Date'); $('#incAmount').value = getVal('Amount'); $('#incCategorySelect').value = getVal('Category'); populateAccountSelect($('#incAccountSelect')); $('#incAccountSelect').value = getVal('Account'); $('#incNotes').value = getVal('Notes'); openModal('#modalIncome');
+        $('#incDate').value = getVal('Date'); $('#incAmount').value = getVal('Amount'); $('#incCategorySelect').value = getVal('Category'); populateAccountSelect($('#incAccountSelect')); $('#incAccountSelect').value = getVal('Account'); $('#incNotes').value = getVal('Notes'); editContext = { mode: 'edit', table: 'Income', row }; $('#saveIncome').innerHTML = '<i class="fa-solid fa-check"></i> Update'; openModal('#modalIncome');
       } else if (table === 'Expense'){
         location.hash = 'expense'; navigateTo('expense');
-        $('#expDate').value = getVal('Date'); $('#expAmount').value = getVal('Amount'); $('#expCategorySelect').value = getVal('Category'); populateAccountSelect($('#expAccountSelect')); $('#expAccountSelect').value = getVal('Account'); $('#expNotes').value = getVal('Notes'); openModal('#modalExpense');
+        $('#expDate').value = getVal('Date'); $('#expAmount').value = getVal('Amount'); $('#expCategorySelect').value = getVal('Category'); populateAccountSelect($('#expAccountSelect')); $('#expAccountSelect').value = getVal('Account'); $('#expNotes').value = getVal('Notes'); editContext = { mode: 'edit', table: 'Expense', row }; $('#saveExpense').innerHTML = '<i class="fa-solid fa-check"></i> Update'; openModal('#modalExpense');
       } else if (table === 'LentBorrowed'){
         location.hash = 'lentborrowed'; navigateTo('lentborrowed');
-        $('#lbName').value = getVal('Name'); $('#lbAmount').value = getVal('Amount'); $('#lbDate').value = getVal('Date'); $('#lbType').value = getVal('Type'); $('#lbNotes').value = getVal('Notes'); openModal('#modalLentBorrowed');
+        $('#lbName').value = getVal('Name'); $('#lbAmount').value = getVal('Amount'); $('#lbDate').value = getVal('Date'); $('#lbType').value = getVal('Type'); $('#lbNotes').value = getVal('Notes'); editContext = { mode: 'edit', table: 'LentBorrowed', row }; $('#saveLentBorrowed').innerHTML = '<i class="fa-solid fa-check"></i> Update'; openModal('#modalLentBorrowed');
       }
     }
   };

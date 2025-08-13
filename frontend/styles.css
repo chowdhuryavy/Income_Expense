@@ -50,6 +50,9 @@ body {
 .sidebar { z-index: 70; }
 .topbar { z-index: 80; position: sticky; top: 0; }
 .topbar.fixed { position: fixed; top: 0; left: 0; right: 0; }
+@media (min-width: 901px){
+  .topbar.fixed { margin-left: 280px; width: calc(100% - 280px); }
+}
 body .main { padding-top: 60px; }
 .main { position: relative; flex: 1; }
 
