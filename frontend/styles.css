@@ -137,7 +137,9 @@ body .main { padding-top: 60px; }
   .charts-grid canvas { height: 90px; }
 }
 
-.filters { display: flex; gap: 8px; margin: 12px 0 16px; }
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: 12px 0 16px; align-items: center; }
+.filters .btn.small { width: 100%; }
+@media (max-width: 560px){ .filters { grid-template-columns: 1fr 1fr; } }
 .chip { background: rgba(255,255,255,0.08); color: var(--text); border: 1px solid rgba(255,255,255,0.12); padding: 8px 12px; border-radius: 999px; cursor: pointer; }
 .chip.active { border-color: var(--primary); background: linear-gradient(90deg, rgba(58,123,213,.25), rgba(0,210,255,.18)); }
 

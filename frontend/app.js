@@ -150,9 +150,13 @@ function formatLocalDate(dStr){
 // Filters
 function renderFilters(containerSelector, table){
   const el = $(containerSelector); if (!el) return;
+  const categoryOptions = (state.settings.categories && (table==='Income' ? state.settings.categories.income : table==='Expense' ? state.settings.categories.expense : [])) || [];
+  const accountOptions = state.accounts.map(a => a['Account Name']);
   el.innerHTML = `
     <input type="date" class="input" data-filter-from />
     <input type="date" class="input" data-filter-to />
+    <select class="select" data-filter-category><option value="">All Categories</option>${categoryOptions.map(c=>`<option>${c}</option>`).join('')}</select>
+    <select class="select" data-filter-account><option value="">All Accounts</option>${accountOptions.map(a=>`<option>${a}</option>`).join('')}</select>
     <input type="search" class="input" placeholder="Search" data-filter-q />
     <button class="btn small" data-apply><i class="fa-solid fa-filter"></i> Apply</button>
     <button class="btn small" data-clear><i class="fa-solid fa-eraser"></i> Clear</button>`;
@@ -160,15 +164,19 @@ function renderFilters(containerSelector, table){
     const from = el.querySelector('[data-filter-from]').value;
     const to = el.querySelector('[data-filter-to]').value;
     const q = (el.querySelector('[data-filter-q]').value||'').toLowerCase();
-    const wrapSelector = table==='Income' ? '#incomeViewTable' : table==='Expense' ? '#expenseViewTable' : '#lentBorrowedViewTable';
+    const cat = el.querySelector('[data-filter-category]').value;
+    const acc = el.querySelector('[data-filter-account]').value;
+    const wrapSelector = table==='Income' ? '#incomeViewTable' : table==='Expense' ? '#expenseViewTable' : table==='LentBorrowed' ? '#lentBorrowedViewTable' : '#accountsViewTable';
     const wrap = $(wrapSelector);
     const { rows } = await api.getTable(table);
     const filtered = rows.filter(r => {
-      const d = new Date(r.Date);
+      const d = new Date(r.Date || r['Date'] || Date.now());
       const inRange = (!from || d >= new Date(from)) && (!to || d <= new Date(to));
       const hay = JSON.stringify(r).toLowerCase();
       const match = !q || hay.includes(q);
-      return inRange && match;
+      const matchCat = !cat || (r.Category === cat);
+      const matchAcc = !acc || (r.Account === acc || r['Account Name'] === acc);
+      return inRange && match && matchCat && matchAcc;
     });
     wrap.querySelector('tbody').innerHTML = filtered.map(r => {
       const headers = Object.keys(r).filter(h=>h!=='_row');
@@ -179,7 +187,12 @@ function renderFilters(containerSelector, table){
     }).join('');
   };
   el.querySelector('[data-apply]').onclick = apply;
-  el.querySelector('[data-clear]').onclick = ()=>{ el.querySelector('[data-filter-from]').value=''; el.querySelector('[data-filter-to]').value=''; el.querySelector('[data-filter-q]').value=''; apply(); };
+  el.querySelector('[data-clear]').onclick = ()=>{ el.querySelector('[data-filter-from]').value=''; el.querySelector('[data-filter-to]').value=''; el.querySelector('[data-filter-q]').value=''; el.querySelector('[data-filter-category]').value=''; el.querySelector('[data-filter-account]').value=''; apply(); };
+  // default to current month
+  const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), 1); const end = new Date(now.getFullYear(), now.getMonth()+1, 0);
+  el.querySelector('[data-filter-from]').value = formatLocalDate(start);
+  el.querySelector('[data-filter-to]').value = formatLocalDate(end);
+  apply();
 }
 
 function renderAccounts(){
@@ -570,6 +583,27 @@ function showLoading(target){ if (!target) return; target.innerHTML = '<div styl
 let requestLock = false;
 async function guarded(fn){ if (requestLock) return; requestLock = true; try { await fn(); } finally { requestLock = false; } }
 
+// Accounts view render
+function renderAccountsTable(){
+  const wrap = $('#accountsViewTable'); if (!wrap) return;
+  const headers = ['Account Name','Type','Balance','Card Number','Issuer'];
+  const html = `
+    <div class="table-toolbar"><button class="btn small" data-back><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button><div class="spacer"></div><div class="table-title">Accounts</div></div>
+    <table class="table"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}<th>Actions</th></tr></thead><tbody>
+      ${state.accounts.map(r => `<tr data-name="${r['Account Name']}">${headers.map(h=>`<td data-key="${h}">${r[h]??''}</td>`).join('')}<td><button class="btn small" data-edit> Edit</button><button class="btn danger small" data-delete> Delete</button></td></tr>`).join('')}
+    </tbody></table>`;
+  wrap.innerHTML = html;
+  const back = wrap.querySelector('[data-back]'); if (back) back.onclick = ()=>{ location.hash='dashboard'; navigateTo('dashboard'); };
+  wrap.onclick = async (e)=>{
+    const tr = e.target.closest('tr'); if (!tr) return; const name = tr.getAttribute('data-name');
+    if (e.target.closest('[data-delete]')){
+      const { rows } = await api.getTable('Accounts'); const found = rows.find(r=>r['Account Name']===name); if (found){ if (!confirm('Delete this account?')) return; await api.deleteRow('Accounts', found._row); await refreshAll(); renderAccountsTable(); showSuccess('Account deleted'); }
+    } else if (e.target.closest('[data-edit]')){
+      const { rows } = await api.getTable('Accounts'); const found = rows.find(r=>r['Account Name']===name); if (found){ openModal('#modalAccount'); $('#accName').value=found['Account Name']; $('#accType').value=found['Type']; $('#accInitialBalance').value=found['Balance']; $('#accCardNumber').value=found['Card Number']||''; $('#accIssuer').value=found['Issuer']||''; editContext={mode:'edit',table:'Accounts',row:found._row}; const sab=$('#saveAccount'); if(sab) sab.innerHTML='<i class="fa-solid fa-check"></i> Update'; }
+    }
+  };
+}
+
 // Bind action cards
 function bindActionCards(){
   const addInc = $('#cardAddIncome'); if (addInc) addInc.onclick = ()=> openIncomeModal();
@@ -577,14 +611,15 @@ function bindActionCards(){
   const addExp = $('#cardAddExpense'); if (addExp) addExp.onclick = ()=> openExpenseModal();
   const viewExp = $('#cardViewExpense'); if (viewExp) viewExp.onclick = ()=> guarded(async ()=>{ location.hash = 'expense-view'; navigateTo('expense-view'); const wrap = $('#expenseViewTable'); showLoading(wrap); await renderTable('Expense', '#expenseViewTable'); renderFilters('#expenseViewFilters','Expense'); });
   const addAcc = $('#cardAddAccount'); if (addAcc) addAcc.onclick = ()=> openModal('#modalAccount');
-  const viewAcc = $('#cardViewAccounts'); if (viewAcc) viewAcc.onclick = ()=> guarded(async ()=>{ location.hash = 'accounts-view'; navigateTo('accounts-view'); const wrap = $('#accountsViewTable'); showLoading(wrap); await renderTable('Accounts', '#accountsViewTable'); /* optional filters */ });
+  const viewAcc = $('#cardViewAccounts'); if (viewAcc) viewAcc.onclick = ()=> guarded(async ()=>{ location.hash = 'accounts-view'; navigateTo('accounts-view'); renderAccountsTable(); });
   const addLB = $('#cardAddLB'); if (addLB) addLB.onclick = ()=> openModal('#modalLentBorrowed');
   const viewLB = $('#cardViewLB'); if (viewLB) viewLB.onclick = ()=> guarded(async ()=>{ location.hash = 'lentborrowed-view'; navigateTo('lentborrowed-view'); const wrap = $('#lentBorrowedViewTable'); showLoading(wrap); await renderTable('LentBorrowed', '#lentBorrowedViewTable'); renderFilters('#lentBorrowedViewFilters','LentBorrowed'); });
 }
 
+// Start at dashboard and collapse sidebar
 window.addEventListener('DOMContentLoaded', async ()=>{
   initCharts();
-  navigateTo(location.hash.replace('#','') || 'dashboard');
+  location.hash = 'dashboard'; navigateTo('dashboard'); setSidebarExpanded(false);
   bindActionButtons();
   bindActionCards();
   try { await refreshAll(); } catch (e) { console.error(e); alert('Configure API URL in frontend/api.js and deploy Apps Script Web App.'); }
