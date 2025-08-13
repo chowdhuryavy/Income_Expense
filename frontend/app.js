@@ -553,6 +553,21 @@ function applySettingsToUI(){
   $('#settingsBaseCurrency').value = s.baseCurrency;
   $('#settingsCategories').value = JSON.stringify(s.categories, null, 2);
   $('#settingsAccountTypes').value = s.accountTypes.join(',');
+  // New settings
+  document.querySelectorAll('.chk-card').forEach(cb => { cb.checked = s.dashboardPrefs.cards.includes(cb.value); });
+  document.querySelectorAll('.chk-chart').forEach(cb => { cb.checked = s.dashboardPrefs.charts.includes(cb.value); });
+  const pc = document.getElementById('settingsPrimaryColor'); if (pc) pc.value = s.themeColors.primary;
+  const ac = document.getElementById('settingsAccentColor'); if (ac) ac.value = s.themeColors.accent;
+  const dr = document.getElementById('settingsDefaultRange'); if (dr) dr.value = s.defaultRange;
+  const dt = document.getElementById('settingsDefaultTab'); if (dt) dt.value = s.defaultTab;
+  const bud = document.getElementById('settingsBudgets'); if (bud) bud.value = JSON.stringify(s.budgets||{}, null, 2);
+  const thr = document.getElementById('settingsThresholds'); if (thr) thr.value = JSON.stringify(s.notificationThresholds||{}, null, 2);
+  const ar = document.getElementById('settingsArchiveMonths'); if (ar) ar.value = s.archiveMonths;
+  // Apply dashboard prefs visibility
+  const cardMap = { total: '#totalBalance', income: '#totalIncome', expense: '#totalExpense', cash: '#cashBalance', credit: '#creditBalance', debit: '#debitBalance' };
+  Object.entries(cardMap).forEach(([key, sel]) => { const el = document.querySelector(sel)?.closest('.card'); if (el) el.style.display = s.dashboardPrefs.cards.includes(key) ? '' : 'none'; });
+  const chartMap = { line: '#chartLine', bar: '#chartBar', pie: '#chartPie', donut: '#chartDonut', stacked: '#chartStacked' };
+  Object.entries(chartMap).forEach(([key, sel]) => { const el = document.querySelector(sel); if (el) el.style.display = s.dashboardPrefs.charts.includes(key) ? '' : 'none'; });
 }
 
 async function saveSettings(){ await api.updateSettings(state.settings); }
@@ -616,3 +631,18 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   bindActionCards();
   try { await refreshAll(); } catch (e) { console.error(e); alert('Configure API URL in frontend/api.js and deploy Apps Script Web App.'); }
 });
+
+// Save Settings button
+const btnSaveSettings = $('#btnSaveSettings'); if (btnSaveSettings) btnSaveSettings.onclick = async ()=>{
+  // collect dashboard prefs
+  state.settings.dashboardPrefs.cards = Array.from(document.querySelectorAll('.chk-card:checked')).map(cb=>cb.value);
+  state.settings.dashboardPrefs.charts = Array.from(document.querySelectorAll('.chk-chart:checked')).map(cb=>cb.value);
+  const pc = document.getElementById('settingsPrimaryColor'); if (pc) state.settings.themeColors.primary = pc.value;
+  const ac = document.getElementById('settingsAccentColor'); if (ac) state.settings.themeColors.accent = ac.value;
+  const dr = document.getElementById('settingsDefaultRange'); if (dr) state.settings.defaultRange = dr.value;
+  const dt = document.getElementById('settingsDefaultTab'); if (dt) state.settings.defaultTab = dt.value;
+  const bud = document.getElementById('settingsBudgets'); if (bud) { try { state.settings.budgets = JSON.parse(bud.value||'{}'); } catch {} }
+  const thr = document.getElementById('settingsThresholds'); if (thr) { try { state.settings.notificationThresholds = JSON.parse(thr.value||'{}'); } catch {} }
+  const ar = document.getElementById('settingsArchiveMonths'); if (ar) state.settings.archiveMonths = Number(ar.value||0);
+  await saveSettings(); applySettingsToUI(); showSuccess('Settings saved');
+};

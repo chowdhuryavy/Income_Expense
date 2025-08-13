@@ -168,13 +168,6 @@
         </div>
         <div class="settings-grid">
           <div class="setting">
-            <label data-i18n="settings_theme">Theme</label>
-            <div>
-              <button id="settingsThemeDark" class="btn small"><i class="fa-solid fa-moon"></i> <span data-i18n="theme_dark">Dark</span></button>
-              <button id="settingsThemeLight" class="btn small"><i class="fa-solid fa-sun"></i> <span data-i18n="theme_light">Light</span></button>
-            </div>
-          </div>
-          <div class="setting">
             <label data-i18n="settings_language">Language</label>
             <select id="settingsLanguage" class="select">
               <option value="en">English</option>
@@ -189,77 +182,57 @@
             <input id="settingsCurrencySymbol" class="input" value="$" />
           </div>
           <div class="setting">
-            <label data-i18n="settings_date_format">Date Format</label>
-            <select id="settingsDateFormat" class="select">
-              <option>MM/DD/YYYY</option>
-              <option>DD/MM/YYYY</option>
-              <option>YYYY-MM-DD</option>
+            <label>Dashboard Cards</label>
+            <div><label><input type="checkbox" class="chk-card" value="total" checked /> Total</label>
+            <label><input type="checkbox" class="chk-card" value="income" checked /> Income</label>
+            <label><input type="checkbox" class="chk-card" value="expense" checked /> Expense</label>
+            <label><input type="checkbox" class="chk-card" value="cash" checked /> Cash</label>
+            <label><input type="checkbox" class="chk-card" value="credit" checked /> Credit</label>
+            <label><input type="checkbox" class="chk-card" value="debit" checked /> Debit</label></div>
+          </div>
+          <div class="setting">
+            <label>Dashboard Charts</label>
+            <div><label><input type="checkbox" class="chk-chart" value="line" checked /> Line</label>
+            <label><input type="checkbox" class="chk-chart" value="bar" checked /> Bar</label>
+            <label><input type="checkbox" class="chk-chart" value="pie" checked /> Pie</label>
+            <label><input type="checkbox" class="chk-chart" value="donut" checked /> Donut</label>
+            <label><input type="checkbox" class="chk-chart" value="stacked" checked /> Stacked</label></div>
+          </div>
+          <div class="setting">
+            <label>Theme Colors</label>
+            <input id="settingsPrimaryColor" type="color" class="input" value="#3a7bd5" /> Primary
+            <input id="settingsAccentColor" type="color" class="input" value="#00d2ff" /> Accent
+          </div>
+          <div class="setting">
+            <label>Default Range</label>
+            <select id="settingsDefaultRange" class="select">
+              <option value="this_month">This Month</option>
+              <option value="last_month">Last Month</option>
+              <option value="this_year">This Year</option>
             </select>
           </div>
           <div class="setting">
-            <label data-i18n="settings_number_format">Number Format</label>
-            <select id="settingsNumberFormat" class="select">
-              <option>1,234.56</option>
-              <option>1.234,56</option>
-              <option>1234.56</option>
+            <label>Default Tab</label>
+            <select id="settingsDefaultTab" class="select">
+              <option value="dashboard">Dashboard</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+              <option value="accounts">Accounts</option>
+              <option value="lentborrowed">Lent & Borrowed</option>
+              <option value="transfer">Transfer</option>
             </select>
           </div>
           <div class="setting">
-            <label data-i18n="settings_auto_sync">Auto Sync</label>
-            <input id="settingsAutoSync" type="checkbox" />
+            <label>Budgets (JSON)</label>
+            <textarea id="settingsBudgets" class="textarea" rows="3" placeholder='{"Food":200,"Transport":100}'></textarea>
           </div>
           <div class="setting">
-            <label data-i18n="settings_notifications">Notifications</label>
-            <input id="settingsNotifications" type="checkbox" />
+            <label>Notification Thresholds (JSON)</label>
+            <textarea id="settingsThresholds" class="textarea" rows="3" placeholder='{"AccountName":50}'></textarea>
           </div>
           <div class="setting">
-            <label data-i18n="settings_multi_currency">Multi-Currency Mode</label>
-            <input id="settingsMultiCurrency" type="checkbox" />
-          </div>
-          <div class="setting">
-            <label data-i18n="settings_base_currency">Base Currency</label>
-            <select id="settingsBaseCurrency" class="select">
-              <option>USD</option>
-              <option>EUR</option>
-              <option>GBP</option>
-              <option>INR</option>
-              <option>BDT</option>
-              <option>NPR</option>
-              <option>QAR</option>
-              <option>JPY</option>
-              <option>KRW</option>
-            </select>
-          </div>
-          <div class="setting">
-            <label data-i18n="settings_categories">Manage Categories</label>
-            <textarea id="settingsCategories" class="textarea" rows="4" placeholder='{"income":["Salary"],"expense":["Food"]}'></textarea>
-          </div>
-          <div class="setting">
-            <label data-i18n="settings_account_types">Account Types</label>
-            <input id="settingsAccountTypes" class="input" value="Bank,Cash,Credit Card" />
-          </div>
-          <div class="setting">
-            <label data-i18n="settings_backup_export">Backup & Export</label>
-            <div>
-              <button id="btnExportJSON" class="btn small"><i class="fa-solid fa-download"></i> JSON</button>
-              <button id="btnExportCSV" class="btn small"><i class="fa-solid fa-file-csv"></i> CSV</button>
-              <button id="btnExportXLSX" class="btn small"><i class="fa-solid fa-file-excel"></i> Excel</button>
-            </div>
-          </div>
-          <div class="setting">
-            <label data-i18n="settings_import_csv">Import CSV</label>
-            <input id="inputImportCSV" type="file" accept=".csv" />
-            <select id="importTarget" class="select">
-              <option value="Income">Income</option>
-              <option value="Expense">Expense</option>
-              <option value="Transfer">Transfer</option>
-              <option value="LentBorrowed">LentBorrowed</option>
-            </select>
-            <button id="btnImportCSV" class="btn small"><i class="fa-solid fa-upload"></i> <span data-i18n="btn_import">Import</span></button>
-          </div>
-          <div class="setting">
-            <label data-i18n="settings_data_reset">Data Reset</label>
-            <button id="btnDataReset" class="btn danger small"><i class="fa-solid fa-trash"></i> <span data-i18n="btn_clear">Clear All Transactions</span></button>
+            <label>Archive After (months)</label>
+            <input id="settingsArchiveMonths" type="number" class="input" min="0" value="0" />
           </div>
           <div class="setting">
             <label>Actions</label>

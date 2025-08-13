@@ -114,7 +114,6 @@ function _getSettings(){
   const rows = _readTable(SHEETS.Settings);
   const map = {};
   rows.forEach(r => { map[r.Key] = r.Value; });
-  // parse complex settings
   const parsed = {
     theme: map.theme || 'dark',
     language: map.language || 'en',
@@ -127,7 +126,14 @@ function _getSettings(){
     multiCurrency: map.multiCurrency === 'true',
     baseCurrency: map.baseCurrency || 'USD',
     categories: _safeJSON(map.categories, { income: ['Salary','Bonus','Interest'], expense: ['Food','Transport','Rent'] }),
-    accountTypes: _safeJSON(map.accountTypes, ['Bank','Cash','Credit Card'])
+    accountTypes: _safeJSON(map.accountTypes, ['Bank','Cash','Credit Card','Debit Card']),
+    dashboardPrefs: _safeJSON(map.dashboardPrefs, { cards: ['total','income','expense','cash','credit','debit'], charts: ['line','bar','pie','donut','stacked'] }),
+    themeColors: _safeJSON(map.themeColors, { primary: '#3a7bd5', accent: '#00d2ff' }),
+    defaultRange: map.defaultRange || 'this_month',
+    defaultTab: map.defaultTab || 'dashboard',
+    budgets: _safeJSON(map.budgets, {}),
+    notificationThresholds: _safeJSON(map.notificationThresholds, {}),
+    archiveMonths: map.archiveMonths ? Number(map.archiveMonths) : 0
   };
   const rates = _safeJSON(map.exchangeRates, {});
   return { settings: parsed, exchangeRates: rates };
@@ -146,7 +152,14 @@ function updateSettings(settings){
     multiCurrency: String(!!settings.multiCurrency),
     baseCurrency: settings.baseCurrency,
     categories: JSON.stringify(settings.categories||{}),
-    accountTypes: JSON.stringify(settings.accountTypes||[])
+    accountTypes: JSON.stringify(settings.accountTypes||[]),
+    dashboardPrefs: JSON.stringify(settings.dashboardPrefs||{}),
+    themeColors: JSON.stringify(settings.themeColors||{}),
+    defaultRange: settings.defaultRange||'this_month',
+    defaultTab: settings.defaultTab||'dashboard',
+    budgets: JSON.stringify(settings.budgets||{}),
+    notificationThresholds: JSON.stringify(settings.notificationThresholds||{}),
+    archiveMonths: String(settings.archiveMonths||0)
   };
   const ss = _ss(); const sh = ss.getSheetByName(SHEETS.Settings);
   const existing = _readTable(SHEETS.Settings);

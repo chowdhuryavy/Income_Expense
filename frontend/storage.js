@@ -11,7 +11,14 @@ export const state = {
     multiCurrency: false,
     baseCurrency: 'USD',
     categories: { income: ['Salary','Bonus','Interest'], expense: ['Food','Transport','Rent'] },
-    accountTypes: ['Bank','Cash','Credit Card']
+    accountTypes: ['Bank','Cash','Credit Card','Debit Card'],
+    dashboardPrefs: { cards: ['total','income','expense','cash','credit','debit'], charts: ['line','bar','pie','donut','stacked'] },
+    themeColors: { primary: '#3a7bd5', accent: '#00d2ff' },
+    defaultRange: 'this_month',
+    defaultTab: 'dashboard',
+    budgets: {},
+    notificationThresholds: {},
+    archiveMonths: 0
   },
   accounts: [],
   income: [],
