@@ -2,7 +2,7 @@ import { $, $$, formatNumber, download, parseCSV, toCSV, debounce, todayISO } fr
 import { translatePage, getCurrentLang, t } from './i18n.js';
 import { api } from './api.js';
 import { state, setSettings, setAllData, totals } from './storage.js';
-import { initCharts, refreshCharts, refreshChartTheme } from './charts.js';
+import * as Charts from './charts.js';
 
 // Sidebar toggle
 const sidebar = $('#sidebar');
@@ -520,7 +520,7 @@ async function refreshAll(){
     updateCards();
     renderAccounts();
     renderTransferInline();
-    refreshCharts($('.chip.active')?.dataset.filter || 'this_month');
+    if (Charts && Charts.refreshCharts) Charts.refreshCharts($('.chip.active')?.dataset.filter || state.settings.defaultRange || 'this_month');
   } catch (e){
     console.error('Failed to fetch data', e);
     const dash = document.querySelector('#route-dashboard');
@@ -574,7 +574,8 @@ async function saveSettings(){ await api.updateSettings(state.settings); }
 
 // Dashboard filter chips
 $$('.filters .chip').forEach(chip => chip.addEventListener('click', () => {
-  $$('.filters .chip').forEach(c => c.classList.remove('active')); chip.classList.add('active'); refreshCharts(chip.dataset.filter);
+  $$('.filters .chip').forEach(c => c.classList.remove('active')); chip.classList.add('active');
+  if (Charts && Charts.refreshCharts) Charts.refreshCharts(chip.dataset.filter);
 }));
 
 function bindActionButtons(){
@@ -625,7 +626,7 @@ function bindActionCards(){
 
 // Start at dashboard and collapse sidebar
 window.addEventListener('DOMContentLoaded', async ()=>{
-  initCharts();
+  if (Charts && Charts.initCharts) await Charts.initCharts();
   location.hash = 'dashboard'; navigateTo('dashboard'); updateTabLabel('dashboard'); setSidebarExpanded(false);
   bindActionButtons();
   bindActionCards();
