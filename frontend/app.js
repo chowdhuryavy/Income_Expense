@@ -215,6 +215,8 @@ function renderAccounts(){
     $('#accInitialBalance').value = found['Balance'];
     $('#accCardNumber').value = found['Card Number']||'';
     $('#accIssuer').value = found['Issuer']||'';
+    editContext = { mode: 'edit', table: 'Accounts', row: found._row };
+    const sab = $('#saveAccount'); if (sab) sab.innerHTML = '<i class="fa-solid fa-check"></i> Update';
   });
 }
 
@@ -335,7 +337,15 @@ const saveExpenseBtn = $('#saveExpense'); if (saveExpenseBtn) saveExpenseBtn.add
 // Save Account includes card details
 const saveAccountBtn = $('#saveAccount'); if (saveAccountBtn) saveAccountBtn.addEventListener('click', withSpinner(saveAccountBtn, async ()=>{
   const row = { AccountName: $('#accName').value, Type: $('#accType').value, Balance: Number($('#accInitialBalance').value||0), 'Card Number': $('#accCardNumber').value, 'Issuer': $('#accIssuer').value };
-  await api.addAccount(row); await refreshAll(); closeModals(); showSuccess('Account saved');
+  if (editContext.mode === 'edit' && editContext.table === 'Accounts'){
+    await api.updateRow('Accounts', editContext.row, { 'Account Name': row.AccountName, 'Type': row.Type, 'Balance': row.Balance, 'Card Number': row['Card Number'], 'Issuer': row['Issuer'] });
+    showSuccess('Account updated');
+  } else {
+    await api.addAccount(row); showSuccess('Account saved');
+  }
+  editContext = { mode: null, table: null, row: null };
+  const sab = $('#saveAccount'); if (sab) sab.innerHTML = '<i class="fa-solid fa-check"></i> Save';
+  await refreshAll(); closeModals();
 }));
 
 const submitTransferBtn = $('#submitTransferInline'); if (submitTransferBtn) submitTransferBtn.addEventListener('click', withSpinner(submitTransferBtn, async ()=>{
@@ -367,6 +377,7 @@ const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.addE
   navigateTo('income');
   await renderTable('Income', '#incomeTableWrap');
   renderFilters('#incomeFilters','Income');
+  showSuccess('Income loaded');
 });
 const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.addEventListener('click', async (e)=> {
   e.stopPropagation();
@@ -374,6 +385,7 @@ const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.
   navigateTo('expense');
   await renderTable('Expense', '#expenseTableWrap');
   renderFilters('#expenseFilters','Expense');
+  showSuccess('Expense loaded');
 });
 const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.addEventListener('click', async (e)=> {
   e.stopPropagation();
@@ -381,6 +393,7 @@ const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.addEventLi
   navigateTo('lentborrowed');
   await renderTable('LentBorrowed', '#lentBorrowedTableWrap');
   renderFilters('#lentBorrowedFilters','LentBorrowed');
+  showSuccess('Lent/Borrowed loaded');
 });
 
 async function renderTable(table, wrapSelector){
