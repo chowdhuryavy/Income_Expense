@@ -1,104 +1,57 @@
-import { state, totals, filterByDateRange } from './storage.js';
+import { state, filterByDateRange } from './storage.js';
 
-let chartLine, chartBar, chartPie, chartDonut, chartStacked;
+let chLine, chBar, chPie, chDonut, chStacked;
 
-function baseChartOptions() {
-  const textColor = getComputedStyle(document.body).getPropertyValue('--text').trim();
-  const gridColor = 'rgba(255,255,255,0.12)';
-  return {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: textColor, font: { size: 10 } } } },
-    layout: { padding: 4 },
-    backgroundColor: 'transparent',
-    scales: {
-      x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
-      y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } }
-    },
-    elements: {
-      point: { radius: 1.5 },
-      line: { borderWidth: 1.2 },
-      bar: { borderWidth: 0 }
-    }
-  };
-}
-
-function ensureChartJs(){
-  if (typeof window.Chart !== 'undefined') return Promise.resolve();
+function ensureApex(){
+  if (window.ApexCharts) return Promise.resolve();
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js';
+    s.src = 'https://cdn.jsdelivr.net/npm/apexcharts';
     s.onload = () => resolve();
-    s.onerror = () => reject(new Error('Failed to load Chart.js'));
+    s.onerror = () => reject(new Error('Failed to load ApexCharts'));
     document.head.appendChild(s);
   });
 }
 
-export async function initCharts(){
-  try { await ensureChartJs(); } catch (e){ console.error(e); return; }
-  const ctxLine = document.getElementById('chartLine');
-  const ctxBar = document.getElementById('chartBar');
-  const ctxPie = document.getElementById('chartPie');
-  const ctxDonut = document.getElementById('chartDonut');
-  const ctxStacked = document.getElementById('chartStacked');
-  if (!ctxLine || !ctxBar || !ctxPie || !ctxDonut || !ctxStacked) return;
+function colors(){
+  return ['#3a7bd5', '#00d2ff', '#16a34a', '#dc2626', '#f59e0b', '#a855f7'];
+}
 
-  chartLine = new Chart(ctxLine, {
-    type: 'line',
-    data: { labels: [], datasets: [{ label: 'Net', data: [], borderColor: '#3a7bd5', backgroundColor: 'rgba(58,123,213,.15)', fill: true }] },
-    options: baseChartOptions()
-  });
-  chartBar = new Chart(ctxBar, {
-    type: 'bar',
-    data: { labels: [], datasets: [
-      { label: 'Income', data: [], backgroundColor: 'rgba(22,163,74,.7)' },
-      { label: 'Expense', data: [], backgroundColor: 'rgba(220,38,38,.7)' }
-    ] },
-    options: { ...baseChartOptions(), scales: { x: { stacked: true, ticks: { maxRotation: 0 } }, y: { stacked: true } } }
-  });
-  chartPie = new Chart(ctxPie, {
-    type: 'pie', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#3a7bd5','#00d2ff','#16a34a','#dc2626','#f59e0b','#a855f7'] }] }, options: baseChartOptions()
-  });
-  chartDonut = new Chart(ctxDonut, {
-    type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#60a5fa','#34d399','#f472b6','#fbbf24','#a78bfa','#f87171'] }] }, options: baseChartOptions()
-  });
-  chartStacked = new Chart(ctxStacked, {
-    type: 'bar', data: { labels: [], datasets: [{ label: 'Net', data: [], backgroundColor: 'rgba(0,210,255,.6)' }] }, options: baseChartOptions()
-  });
+export async function initCharts(){
+  try { await ensureApex(); } catch (e){ console.error(e); return; }
+  const optsBase = {
+    chart: { foreColor: getComputedStyle(document.body).getPropertyValue('--text').trim(), toolbar: { show: false }, animations: { enabled: true } },
+    grid: { borderColor: 'rgba(255,255,255,0.12)' },
+    dataLabels: { enabled: false },
+    legend: { show: true },
+    colors: colors(),
+  };
+  chLine = new ApexCharts(document.querySelector('#chartLine'), { ...optsBase, chart: { ...optsBase.chart, type: 'line', sparkline: { enabled: false } }, stroke: { width: 2 }, series: [{ name: 'Net', data: [] }], xaxis: { categories: [] } }); chLine.render();
+  chBar = new ApexCharts(document.querySelector('#chartBar'), { ...optsBase, chart: { ...optsBase.chart, type: 'bar', stacked: true }, series: [{ name: 'Income', data: [] }, { name: 'Expense', data: [] }], xaxis: { categories: [] } }); chBar.render();
+  chPie = new ApexCharts(document.querySelector('#chartPie'), { ...optsBase, chart: { ...optsBase.chart, type: 'pie' }, labels: [], series: [] }); chPie.render();
+  chDonut = new ApexCharts(document.querySelector('#chartDonut'), { ...optsBase, chart: { ...optsBase.chart, type: 'donut' }, labels: [], series: [] }); chDonut.render();
+  chStacked = new ApexCharts(document.querySelector('#chartStacked'), { ...optsBase, chart: { ...optsBase.chart, type: 'bar' }, series: [{ name: 'Net', data: [] }], xaxis: { categories: [] } }); chStacked.render();
 }
 
 export function refreshCharts(range = 'this_month'){
-  if (!chartLine) return;
+  if (!chLine) return;
   const inc = filterByDateRange(state.income, range);
   const exp = filterByDateRange(state.expense, range);
-
   const byMonth = (rows) => {
-    const m = new Map();
-    rows.forEach(r => { const d = new Date(r.Date || r.date); if (isNaN(d)) return; const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; m.set(key, (m.get(key)||0) + Number(r.Amount||0)); });
+    const m = new Map(); rows.forEach(r => { const d = new Date(r.Date); if (isNaN(d)) return; const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; m.set(key, (m.get(key)||0) + Number(r.Amount||0)); });
     return Array.from(m.entries()).sort(([a],[b]) => a.localeCompare(b));
   };
-
   const incM = byMonth(inc), expM = byMonth(exp);
   const labels = Array.from(new Set([...incM.map(i=>i[0]), ...expM.map(i=>i[0])])).sort();
   const incData = labels.map(l => (incM.find(([k])=>k===l)?.[1]||0));
   const expData = labels.map(l => (expM.find(([k])=>k===l)?.[1]||0));
-
-  chartLine.data.labels = labels; chartLine.data.datasets[0].data = labels.map((l, idx)=> (incData[idx] - expData[idx])); chartLine.update();
-  chartBar.data.labels = labels; chartBar.data.datasets[0].data = incData; chartBar.data.datasets[1].data = expData; chartBar.update();
-
+  chLine.updateOptions({ xaxis: { categories: labels } }); chLine.updateSeries([{ name: 'Net', data: labels.map((_,i)=>incData[i]-expData[i]) }]);
+  chBar.updateOptions({ xaxis: { categories: labels } }); chBar.updateSeries([{ name: 'Income', data: incData }, { name: 'Expense', data: expData }]);
   const expByCat = new Map(); exp.forEach(r => expByCat.set(r.Category, (expByCat.get(r.Category)||0)+Number(r.Amount||0)));
-  const pieLabels = Array.from(expByCat.keys()); const pieData = Array.from(expByCat.values());
-  chartPie.data.labels = pieLabels; chartPie.data.datasets[0].data = pieData; chartPie.update();
-
+  chPie.updateOptions({ labels: Array.from(expByCat.keys()) }); chPie.updateSeries(Array.from(expByCat.values()));
   const incByCat = new Map(); inc.forEach(r => incByCat.set(r.Category, (incByCat.get(r.Category)||0)+Number(r.Amount||0)));
-  const donutLabels = Array.from(incByCat.keys()); const donutData = Array.from(incByCat.values());
-  chartDonut.data.labels = donutLabels; chartDonut.data.datasets[0].data = donutData; chartDonut.update();
-
-  chartStacked.data.labels = labels; chartStacked.data.datasets[0].data = labels.map((l, idx)=> (incData[idx] - expData[idx])); chartStacked.update();
+  chDonut.updateOptions({ labels: Array.from(incByCat.keys()) }); chDonut.updateSeries(Array.from(incByCat.values()));
+  chStacked.updateOptions({ xaxis: { categories: labels } }); chStacked.updateSeries([{ name: 'Net', data: labels.map((_,i)=>incData[i]-expData[i]) }]);
 }
 
-export function refreshChartTheme(){
-  if (!chartLine) return;
-  const opts = baseChartOptions();
-  [chartLine, chartBar, chartPie, chartDonut, chartStacked].forEach(ch => { if (!ch) return; ch.options = { ...ch.options, ...opts }; ch.update(); });
-}
+export function refreshChartTheme(){ if (!chLine) return; initCharts().then(()=> refreshCharts()); }

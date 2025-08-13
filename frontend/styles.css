@@ -294,3 +294,9 @@ h1, h2, h3 { font-size: clamp(16px, 2vw, 22px); }
 
 /* Success alert */
 .alert { padding: 8px 10px; border: 1px solid rgba(34,197,94,.35); background: rgba(34,197,94,.12); color: var(--text); border-radius: 8px; }
+
+/* Chart containers */
+.chart { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); padding: 8px; }
+.charts-grid .chart { height: 160px; }
+@media (max-width: 900px){ .charts-grid .chart { height: 120px; } }
+@media (max-width: 560px){ .charts-grid .chart { height: 90px; } }
