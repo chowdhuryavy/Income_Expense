@@ -49,9 +49,14 @@ function navigateTo(route){
   if (section) section.classList.add('active');
 }
 
+function updateTabLabel(route){
+  const map = { 'dashboard':'Dashboard','income':'Income','income-view':'Income','expense':'Expense','expense-view':'Expense','accounts':'Accounts','accounts-view':'Accounts','lentborrowed':'Lent & Borrowed','lentborrowed-view':'Lent & Borrowed','transfer':'Transfer','settings':'Settings' };
+  const el = document.getElementById('currentTabLabel'); if (el) el.textContent = map[route] || 'Dashboard';
+}
+
 window.addEventListener('hashchange', () => {
   const route = location.hash.replace('#','');
-  navigateTo(route);
+  navigateTo(route); updateTabLabel(route);
 });
 
 // Routing
@@ -78,42 +83,12 @@ routes.forEach(btn => btn.addEventListener('click', async (e) => {
   setSidebarExpanded(false);
   closeModals();
   resetRouteView(route);
+  updateTabLabel(route);
 }));
 
 // Topbar theme and language
 const themeToggle = $('#themeToggle');
 if (themeToggle) themeToggle.addEventListener('click', () => toggleTheme());
-const langSel = $('#languageSelect'); if (langSel) langSel.addEventListener('change', (e) => { setLanguage(e.target.value); });
-const currSel = $('#currencySymbolSelect'); if (currSel) currSel.addEventListener('change', (e) => { state.settings.currencySymbol = e.target.value; saveSettings(); updateCards(); });
-
-// Compact header controls
-const btnLang = $('#btnLang');
-if (btnLang) btnLang.onclick = ()=>{
-  const langs = ['en','ar','bn','hi','ne'];
-  const current = state.settings.language || 'en';
-  const idx = (langs.indexOf(current)+1) % langs.length;
-  const next = langs[idx];
-  setLanguage(next);
-  btnLang.textContent = next.toUpperCase().slice(0,1);
-};
-const btnCurr = $('#btnCurr');
-if (btnCurr) btnCurr.onclick = ()=>{
-  const symbols = ['$', '€', '£', '₹', '৳', '₨', 'QR', '¥', '₩'];
-  const current = state.settings.currencySymbol || '$';
-  const idx = (symbols.indexOf(current)+1) % symbols.length;
-  const next = symbols[idx];
-  state.settings.currencySymbol = next; btnCurr.textContent = next; saveSettings(); updateCards();
-};
-
-// Save Settings button
-const btnSaveSettings = $('#btnSaveSettings'); if (btnSaveSettings) btnSaveSettings.onclick = async ()=>{ await saveSettings(); showSuccess('Settings saved'); };
-
-function toggleTheme(target){
-  const isLight = document.body.classList.toggle('theme-light');
-  document.body.classList.toggle('theme-dark', !isLight);
-  state.settings.theme = isLight ? 'light' : 'dark';
-  saveSettings(); refreshChartTheme();
-}
 
 function setLanguage(lang){ translatePage(lang); state.settings.language = lang; $('#settingsLanguage').value = lang; saveSettings(); }
 
@@ -636,7 +611,7 @@ function bindActionCards(){
 // Start at dashboard and collapse sidebar
 window.addEventListener('DOMContentLoaded', async ()=>{
   initCharts();
-  location.hash = 'dashboard'; navigateTo('dashboard'); setSidebarExpanded(false);
+  location.hash = 'dashboard'; navigateTo('dashboard'); updateTabLabel('dashboard'); setSidebarExpanded(false);
   bindActionButtons();
   bindActionCards();
   try { await refreshAll(); } catch (e) { console.error(e); alert('Configure API URL in frontend/api.js and deploy Apps Script Web App.'); }

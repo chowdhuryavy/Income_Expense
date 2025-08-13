@@ -302,3 +302,9 @@ h1, h2, h3 { font-size: clamp(16px, 2vw, 22px); }
 .charts-grid .chart { height: 160px; }
 @media (max-width: 900px){ .charts-grid .chart { height: 120px; } }
 @media (max-width: 560px){ .charts-grid .chart { height: 90px; } }
+
+.app-head { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.app-title { font-weight: 800; letter-spacing: .4px; font-size: clamp(16px, 2.2vw, 20px); background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399, #fbbf24, #f472b6); -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 6s linear infinite; }
+.app-by { font-size: 11px; color: var(--text-dim); animation: fadePulse 3s ease-in-out infinite; }
+.app-subtitle { font-size: 12px; color: var(--text-dim); }
+@keyframes fadePulse { 0%{ opacity: .6 } 50%{ opacity: 1 } 100%{ opacity: .6 } }
