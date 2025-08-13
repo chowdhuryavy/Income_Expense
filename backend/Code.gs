@@ -13,7 +13,7 @@ const REQUIRED_HEADERS = {
   Expense: ['Date','Amount','Category','Account','Notes','Currency','Rate'],
   Accounts: ['Account Name','Type','Balance','Card Number','Issuer'],
   Transfer: ['From Account','To Account','Amount','Date','Notes','Currency','Rate'],
-  LentBorrowed: ['Name','Amount','Date','Type','Notes'],
+  LentBorrowed: ['Name','Amount','Date','Type','Notes','Status'],
   Settings: ['Key','Value']
 };
 
@@ -64,6 +64,7 @@ function doPost(e){
     if (action === 'addAccount') return _json(addAccount(payload));
     if (action === 'addTransfer') return _json(addTransfer(payload));
     if (action === 'addLentBorrowed') return _json(addLentBorrowed(payload));
+    if (action === 'settleLentBorrowed') return _json(settleLentBorrowed(payload));
     if (action === 'updateSettings') return _json(updateSettings(payload));
     if (action === 'resetData') return _json(resetData());
     if (action === 'importCSV') return _json(importCSV(payload));
@@ -218,7 +219,34 @@ function addTransfer(row){
 }
 
 function addLentBorrowed(row){
-  _appendRow(SHEETS.LentBorrowed, { 'Name': row.Name||'', 'Amount': Number(row.Amount||0), 'Date': row.Date||'', 'Type': row.Type||'', 'Notes': row.Notes||'' });
+  _appendRow(SHEETS.LentBorrowed, { 'Name': row.Name||'', 'Amount': Number(row.Amount||0), 'Date': row.Date||'', 'Type': row.Type||'', 'Notes': row.Notes||'', 'Status': 'Pending' });
+  return { ok: true };
+}
+
+function settleLentBorrowed(payload){
+  const row = Number(payload.row); const account = payload.accountName;
+  if (!row || !account) throw new Error('row/accountName required');
+  const sh = _ss().getSheetByName(SHEETS.LentBorrowed);
+  const data = sh.getDataRange().getValues();
+  const headers = data[0];
+  const idxName = headers.indexOf('Name');
+  const idxAmt = headers.indexOf('Amount');
+  const idxType = headers.indexOf('Type');
+  const idxStatus = headers.indexOf('Status');
+  const r = row+1; // data row index (header at 1)
+  const currentStatus = data[r][idxStatus];
+  if (String(currentStatus).toLowerCase() !== 'pending') return { ok: true, message: 'Already settled' };
+  const type = data[r][idxType];
+  const amount = Number(data[r][idxAmt]||0);
+  if ((type||'').toLowerCase() === 'lent'){
+    // money comes back to account
+    _updateAccountBalance(account, +amount);
+    sh.getRange(r+1, idxStatus+1).setValue('Returned');
+  } else {
+    // borrowed paid back: money leaves account
+    _updateAccountBalance(account, -amount);
+    sh.getRange(r+1, idxStatus+1).setValue('Paid back');
+  }
   return { ok: true };
 }
 

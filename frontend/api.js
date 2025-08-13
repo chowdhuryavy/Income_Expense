@@ -58,7 +58,8 @@ export const api = {
   resetData: () => post('resetData'),
   importCSV: (targetTable, rows) => post('importCSV', { targetTable, rows }),
   deleteRow: (table, row) => post('deleteRow', { table, row }),
-  updateRow: (table, row, data) => post('updateRow', { table, row, data })
+  updateRow: (table, row, data) => post('updateRow', { table, row, data }),
+  settleLentBorrowed: (row, accountName) => post('settleLentBorrowed', { row, accountName })
 };
 
 export function setApiBaseUrl(url){

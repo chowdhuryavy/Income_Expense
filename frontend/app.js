@@ -434,6 +434,7 @@ async function renderTable(table, wrapSelector){
         ${rows.map(r => `<tr data-row="${r._row}">${headers.map(h=>`<td data-key="${h}">${h==='Date'?formatLocalDate(r[h]):(r[h]??'')}</td>`).join('')}<td>
           <button class="btn small" data-edit><i class="fa-solid fa-pen"></i> Edit</button>
           <button class="btn danger small" data-delete><i class="fa-solid fa-trash"></i> Delete</button>
+          ${table==='LentBorrowed' ? '<button class="btn small" data-settle>Settle</button>' : ''}
         </td></tr>`).join('')}
       </tbody>
     </table>`;
@@ -444,7 +445,8 @@ async function renderTable(table, wrapSelector){
   wrap.onclick = async (e)=>{
     const del = e.target.closest('[data-delete]');
     const ed = e.target.closest('[data-edit]');
-    if (!del && !ed) return;
+    const settle = e.target.closest('[data-settle]');
+    if (!del && !ed && !settle) return;
     const tr = e.target.closest('tr'); const row = Number(tr.getAttribute('data-row'));
     if (del){ if (!confirm('Delete this row?')) return; await api.deleteRow(table, row); await refreshAll(); await renderTable(table, wrapSelector); showSuccess('Deleted'); return; }
     if (ed){
@@ -459,6 +461,10 @@ async function renderTable(table, wrapSelector){
         location.hash = 'lentborrowed'; navigateTo('lentborrowed');
         $('#lbName').value = getVal('Name'); $('#lbAmount').value = getVal('Amount'); $('#lbDate').value = getVal('Date'); $('#lbType').value = getVal('Type'); $('#lbNotes').value = getVal('Notes'); editContext = { mode: 'edit', table: 'LentBorrowed', row }; $('#saveLentBorrowed').innerHTML = '<i class="fa-solid fa-check"></i> Update'; openModal('#modalLentBorrowed');
       }
+    }
+    if (settle && table === 'LentBorrowed'){
+      const accountName = prompt('Settle to/from which account? Enter account name exactly as listed.'); if (!accountName) return;
+      await api.settleLentBorrowed(row, accountName); await refreshAll(); await renderTable(table, wrapSelector); showSuccess('Settled');
     }
   };
 }
