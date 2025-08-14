@@ -323,3 +323,12 @@ h1, h2, h3 { font-size: clamp(16px, 2vw, 22px); }
 @keyframes dance { 0%{ transform: translateY(0) rotate(0deg);} 25%{ transform: translateY(-1px) rotate(-1deg);} 50%{ transform: translateY(0) rotate(0deg);} 75%{ transform: translateY(1px) rotate(1deg);} 100%{ transform: translateY(0) rotate(0deg);} }
 .app-subtitle { font-size: 12px; color: var(--text-dim); }
 @keyframes fadePulse { 0%{ opacity: .6 } 50%{ opacity: 1 } 100%{ opacity: .6 } }
+
+/* Global loading overlay */
+#globalLoadingOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 1200; }
+#globalLoadingOverlay.show { display: flex; }
+#globalLoadingOverlay .box { background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04)); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px 18px; display: flex; align-items: center; gap: 12px; box-shadow: var(--card-glow); }
+#globalLoadingOverlay .text { color: var(--text); font-weight: 600; letter-spacing: .3px; }
+body.global-loading { overflow: hidden; }
+/* Optional visual for disabled menu items when blocked */
+.menu-item[disabled] { opacity: .6; pointer-events: none; }

@@ -409,7 +409,7 @@ const saveLBBtn = $('#saveLentBorrowed'); if (saveLBBtn) saveLBBtn.addEventListe
 }));
 
 // View buttons also render filters
-const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.addEventListener('click', async (e)=> {
+const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.addEventListener('click', guardedGlobal(async (e)=> {
   e.stopPropagation();
   viewIncomeBtn.classList.add('loading'); viewIncomeBtn.innerHTML = '<i class="fa-solid fa-table"></i> Loading...'; viewIncomeBtn.disabled = true;
   try {
@@ -419,8 +419,8 @@ const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.addE
     renderFilters('#incomeFilters','Income');
     showSuccess('Income loaded');
   } finally { viewIncomeBtn.disabled = false; viewIncomeBtn.classList.remove('loading'); viewIncomeBtn.innerHTML = '<i class="fa-solid fa-table"></i> View Income'; }
-});
-const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.addEventListener('click', async (e)=> {
+}));
+const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.addEventListener('click', guardedGlobal(async (e)=> {
   e.stopPropagation();
   viewExpenseBtn.classList.add('loading'); viewExpenseBtn.innerHTML = '<i class="fa-solid fa-table"></i> Loading...'; viewExpenseBtn.disabled = true;
   try {
@@ -430,8 +430,8 @@ const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.
     renderFilters('#expenseFilters','Expense');
     showSuccess('Expense loaded');
   } finally { viewExpenseBtn.disabled = false; viewExpenseBtn.classList.remove('loading'); viewExpenseBtn.innerHTML = '<i class="fa-solid fa-table"></i> View Expense'; }
-});
-const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.addEventListener('click', async (e)=> {
+}));
+const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.addEventListener('click', guardedGlobal(async (e)=> {
   e.stopPropagation();
   viewLBBtn.classList.add('loading'); viewLBBtn.innerHTML = '<i class="fa-solid fa-table"></i> Loading...'; viewLBBtn.disabled = true;
   try {
@@ -441,7 +441,7 @@ const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.addEventLi
     renderFilters('#lentBorrowedFilters','LentBorrowed');
     showSuccess('Lent/Borrowed loaded');
   } finally { viewLBBtn.disabled = false; viewLBBtn.classList.remove('loading'); viewLBBtn.innerHTML = '<i class="fa-solid fa-table"></i> View Lent/Borrowed'; }
-});
+}));
 
 async function renderTable(table, wrapSelector){
   // hide action cards for the current section
@@ -515,6 +515,8 @@ function computeAccountsTotal(){
 }
 
 async function refreshAll(){
+  const overlay = document.getElementById('globalLoadingOverlay');
+  document.body.classList.add('global-loading'); if (overlay) overlay.classList.add('show');
   try {
     const data = await api.getAllData();
     setAllData(data);
@@ -536,6 +538,8 @@ async function refreshAll(){
         const btn = div.querySelector('#btnSetApiUrl'); if (btn) btn.onclick = ()=>{ const url = prompt('Enter Web App URL (ends with /exec)'); if (url) { try { import('./api.js').then(m => m.setApiBaseUrl(url)); location.reload(); } catch {} } };
       }
     }
+  } finally {
+    document.body.classList.remove('global-loading'); if (overlay) overlay.classList.remove('show');
   }
 }
 
@@ -588,10 +592,18 @@ const sBase = document.getElementById('settingsBaseCurrency'); if (sBase) sBase.
 const sCats = document.getElementById('settingsCategories'); if (sCats) sCats.addEventListener('input', debounce(e => { try { state.settings.categories = JSON.parse(e.target.value); saveSettings(); } catch {} }, 600));
 const sAccTypes = document.getElementById('settingsAccountTypes'); if (sAccTypes) sAccTypes.addEventListener('input', e => { state.settings.accountTypes = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); saveSettings(); });
 
-const btnExportJSON = $('#btnExportJSON'); if (btnExportJSON) btnExportJSON.addEventListener('click', async ()=>{
+function guardedGlobal(fn){
+  return async (...args)=>{
+    const overlay = document.getElementById('globalLoadingOverlay');
+    document.body.classList.add('global-loading'); if (overlay) overlay.classList.add('show');
+    try { return await fn(...args); } finally { document.body.classList.remove('global-loading'); if (overlay) overlay.classList.remove('show'); }
+  };
+}
+
+const btnExportJSON = $('#btnExportJSON'); if (btnExportJSON) btnExportJSON.addEventListener('click', guardedGlobal(async ()=>{
   const data = await api.exportBackup(); download(`backup-${Date.now()}.json`, JSON.stringify(data, null, 2));
-});
-const btnExportCSV = $('#btnExportCSV'); if (btnExportCSV) btnExportCSV.addEventListener('click', async ()=>{
+}));
+const btnExportCSV = $('#btnExportCSV'); if (btnExportCSV) btnExportCSV.addEventListener('click', guardedGlobal(async ()=>{
   const data = await api.exportBackup();
   const csv = Object.entries(data).map(([name, rows]) => {
     const headers = rows.length ? Object.keys(rows[0]) : [];
@@ -599,10 +611,10 @@ const btnExportCSV = $('#btnExportCSV'); if (btnExportCSV) btnExportCSV.addEvent
     return [`# ${name}`, toCSV([headers, ...body])].join('\n');
   }).join('\n\n');
   download(`backup-${Date.now()}.csv`, csv, 'text/csv');
-});
-const btnExportXLSX = $('#btnExportXLSX'); if (btnExportXLSX) btnExportXLSX.addEventListener('click', async ()=>{
+}));
+const btnExportXLSX = $('#btnExportXLSX'); if (btnExportXLSX) btnExportXLSX.addEventListener('click', guardedGlobal(async ()=>{
   const data = await api.exportBackup(); download(`backup-${Date.now()}.json`, JSON.stringify(data, null, 2));
-});
+}));
 const btnSaveSettings = $('#btnSaveSettings'); if (btnSaveSettings) btnSaveSettings.addEventListener('click', async ()=>{ await saveSettings(); showSuccess('Settings saved'); await refreshAll(); });
 
 function bindActionButtons(){
