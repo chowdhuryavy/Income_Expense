@@ -74,6 +74,10 @@ function resetRouteView(route){
     const sec = document.querySelector('#route-lentborrowed'); if (!sec) return;
     const actions = sec.querySelector('.action-cards'); const filt = sec.querySelector('#lentBorrowedFilters'); const tbl = sec.querySelector('#lentBorrowedTableWrap');
     if (actions) actions.classList.remove('hidden'); if (filt) filt.classList.add('hidden'); if (tbl) tbl.classList.add('hidden');
+  } else if (route === 'accounts'){
+    const sec = document.querySelector('#route-accounts'); if (!sec) return;
+    const actions = sec.querySelector('.action-cards'); const cards = sec.querySelector('#accountsCards');
+    if (actions) actions.classList.remove('hidden'); if (cards) cards.classList.add('hidden');
   }
 }
 routes.forEach(btn => btn.addEventListener('click', async (e) => {
@@ -202,6 +206,9 @@ function renderFilters(containerSelector, table){
 
 function renderAccounts(){
   const wrap = $('#accountsCards'); if (!wrap) return;
+  // Hide cards when not on accounts main route
+  const onAccountsMain = location.hash.replace('#','') === 'accounts';
+  wrap.classList.toggle('hidden', !onAccountsMain);
   const nf = state.settings.numberFormat; const d = state.settings.decimals; const sym = state.settings.currencySymbol;
   wrap.innerHTML = state.accounts.map(acc => {
     const name = acc['Account Name'] || acc.AccountName || '';
@@ -448,6 +455,7 @@ async function renderTable(table, wrapSelector){
   if (wrapSelector.includes('income')){ const actions = document.querySelector('#route-income .action-cards'); if (actions) actions.classList.add('hidden'); }
   if (wrapSelector.includes('expense')){ const actions = document.querySelector('#route-expense .action-cards'); if (actions) actions.classList.add('hidden'); }
   if (wrapSelector.includes('lentBorrowed')){ const actions = document.querySelector('#route-lentborrowed .action-cards'); if (actions) actions.classList.add('hidden'); }
+  if (wrapSelector.includes('accounts')){ const actions = document.querySelector('#route-accounts .action-cards'); const cards = document.querySelector('#accountsCards'); if (actions) actions.classList.add('hidden'); if (cards) cards.classList.add('hidden'); }
   const wrap = $(wrapSelector); wrap.classList.remove('hidden');
   let data;
   try { data = await api.getTable(table); } catch (e){ console.error('Failed to load table', table, e); wrap.innerHTML = `<div style="padding:12px;">Failed to load ${table}</div>`; return; }
