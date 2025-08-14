@@ -58,7 +58,7 @@ body .main { padding-top: 60px; }
 
 /* Mobile sidebar behavior */
 @media (max-width: 900px){
-  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; }
+  .sidebar { position: fixed; left: 0; top: 60px; bottom: 0; height: calc(100vh - 60px); }
   body.sidebar-open .screen-overlay { opacity: 1; pointer-events: all; }
 }
 
