@@ -171,7 +171,7 @@ function renderFilters(containerSelector, table){
     el.querySelector('[data-filter-from]').value = formatLocalDate(start);
     el.querySelector('[data-filter-to]').value = formatLocalDate(end);
   };
-  const apply = async ()=>{
+  const apply = guardedGlobal(async ()=>{
     const from = el.querySelector('[data-filter-from]').value;
     const to = el.querySelector('[data-filter-to]').value;
     const q = (el.querySelector('[data-filter-q]').value||'').toLowerCase();
@@ -196,7 +196,7 @@ function renderFilters(containerSelector, table){
         <button class="btn danger small" data-delete><i class="fa-solid fa-trash"></i> Delete</button>
       </td></tr>`;
     }).join('');
-  };
+  });
   el.querySelectorAll('.chip').forEach(ch => ch.onclick = ()=>{ el.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); ch.classList.add('active'); setRange(ch.getAttribute('data-range')); apply(); });
   el.querySelector('[data-apply]').onclick = apply;
   el.querySelector('[data-clear]').onclick = ()=>{ el.querySelector('[data-filter-from]').value=''; el.querySelector('[data-filter-to]').value=''; el.querySelector('[data-filter-q]').value=''; el.querySelector('[data-filter-category]').value=''; el.querySelector('[data-filter-account]').value=''; el.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); apply(); };
@@ -229,15 +229,15 @@ function renderAccounts(){
       </div>`;
   }).join('');
   // bind account actions
-  wrap.querySelectorAll('[data-delete-account]').forEach(btn => btn.onclick = async (e)=>{
+  wrap.querySelectorAll('[data-delete-account]').forEach(btn => btn.onclick = guardedGlobal(async (e)=>{
     const name = e.currentTarget.getAttribute('data-name');
     const { rows } = await api.getTable('Accounts');
     const found = rows.find(r => r['Account Name'] === name);
     if (!found) return;
     if (!confirm('Delete this account?')) return;
     await api.deleteRow('Accounts', found._row); await refreshAll(); showSuccess('Account deleted');
-  });
-  wrap.querySelectorAll('[data-edit-account]').forEach(btn => btn.onclick = async (e)=>{
+  }));
+  wrap.querySelectorAll('[data-edit-account]').forEach(btn => btn.onclick = guardedGlobal(async (e)=>{
     const name = e.currentTarget.getAttribute('data-name');
     const { rows } = await api.getTable('Accounts');
     const found = rows.find(r => r['Account Name'] === name);
@@ -250,7 +250,7 @@ function renderAccounts(){
     $('#accIssuer').value = found['Issuer']||'';
     editContext = { mode: 'edit', table: 'Accounts', row: found._row };
     const sab = $('#saveAccount'); if (sab) sab.innerHTML = '<i class="fa-solid fa-check"></i> Update';
-  });
+  }));
 }
 
 function populateAccountSelect(select){
@@ -338,7 +338,7 @@ function showLoading(target){ if (!target) return; target.innerHTML = '<div clas
 let editContext = { mode: null, table: null, row: null };
 
 // Save handlers with spinner and success
-const saveIncomeBtn = $('#saveIncome'); if (saveIncomeBtn) saveIncomeBtn.addEventListener('click', withSpinner(saveIncomeBtn, async ()=>{
+const saveIncomeBtn = $('#saveIncome'); if (saveIncomeBtn) saveIncomeBtn.addEventListener('click', withSpinner(saveIncomeBtn, guardedGlobal(async ()=>{
   const row = {
     Date: $('#incDate').value,
     Amount: Number($('#incAmount').value||0),
@@ -353,11 +353,10 @@ const saveIncomeBtn = $('#saveIncome'); if (saveIncomeBtn) saveIncomeBtn.addEven
     await api.addIncome(row);
   }
   await refreshAll(); resetIncomeForm(); closeModals(); showSuccess('Income saved'); editContext = { mode: null, table: null, row: null };
-  // Navigate to view and show data
   location.hash = 'income-view'; navigateTo('income-view'); const iw = $('#incomeViewTable'); showLoading(iw); await renderTable('Income', '#incomeViewTable'); renderFilters('#incomeViewFilters','Income');
-}));
+})));
 
-const saveExpenseBtn = $('#saveExpense'); if (saveExpenseBtn) saveExpenseBtn.addEventListener('click', withSpinner(saveExpenseBtn, async ()=>{
+const saveExpenseBtn = $('#saveExpense'); if (saveExpenseBtn) saveExpenseBtn.addEventListener('click', withSpinner(saveExpenseBtn, guardedGlobal(async ()=>{
   const row = {
     Date: $('#expDate').value,
     Amount: Number($('#expAmount').value||0),
@@ -373,10 +372,10 @@ const saveExpenseBtn = $('#saveExpense'); if (saveExpenseBtn) saveExpenseBtn.add
   }
   await refreshAll(); resetExpenseForm(); closeModals(); showSuccess('Expense saved'); editContext = { mode: null, table: null, row: null };
   location.hash = 'expense-view'; navigateTo('expense-view'); const ew = $('#expenseViewTable'); showLoading(ew); await renderTable('Expense', '#expenseViewTable'); renderFilters('#expenseViewFilters','Expense');
-}));
+})));
 
 // Save Account includes card details
-const saveAccountBtn = $('#saveAccount'); if (saveAccountBtn) saveAccountBtn.addEventListener('click', withSpinner(saveAccountBtn, async ()=>{
+const saveAccountBtn = $('#saveAccount'); if (saveAccountBtn) saveAccountBtn.addEventListener('click', withSpinner(saveAccountBtn, guardedGlobal(async ()=>{
   const row = { AccountName: $('#accName').value, Type: $('#accType').value, Balance: Number($('#accInitialBalance').value||0), 'Card Number': $('#accCardNumber').value, 'Issuer': $('#accIssuer').value };
   if (editContext.mode === 'edit' && editContext.table === 'Accounts'){
     await api.updateRow('Accounts', editContext.row, { 'Account Name': row.AccountName, 'Type': row.Type, 'Balance': row.Balance, 'Card Number': row['Card Number'], 'Issuer': row['Issuer'] });
@@ -388,9 +387,9 @@ const saveAccountBtn = $('#saveAccount'); if (saveAccountBtn) saveAccountBtn.add
   const sab = $('#saveAccount'); if (sab) sab.innerHTML = '<i class="fa-solid fa-check"></i> Save';
   await refreshAll(); closeModals(); resetAccountForm(); showSuccess('Account saved');
   location.hash = 'accounts-view'; navigateTo('accounts-view'); const aw = $('#accountsViewTable'); showLoading(aw); await renderTable('Accounts', '#accountsViewTable'); renderFilters('#accountsViewFilters','Accounts');
-}));
+})));
 
-const submitTransferBtn = $('#submitTransferInline'); if (submitTransferBtn) submitTransferBtn.addEventListener('click', withSpinner(submitTransferBtn, async ()=>{
+const submitTransferBtn = $('#submitTransferInline'); if (submitTransferBtn) submitTransferBtn.addEventListener('click', withSpinner(submitTransferBtn, guardedGlobal(async ()=>{
   const row = {
     FromAccount: $('#trFromSelect').value,
     ToAccount: $('#trToSelect').value,
@@ -400,11 +399,10 @@ const submitTransferBtn = $('#submitTransferInline'); if (submitTransferBtn) sub
     Currency: state.settings.multiCurrency ? ($('#trCurrencyInline').value||state.settings.baseCurrency) : state.settings.baseCurrency
   };
   await api.addTransfer(row); await refreshAll(); showSuccess('Transfer completed');
-  // Show transfer list
   location.hash = 'transfer'; navigateTo('transfer'); const tw = $('#transfersTableWrap'); if (tw){ tw.classList.remove('hidden'); showLoading(tw); await renderTable('Transfer', '#transfersTableWrap'); }
-}));
+})));
 
-const saveLBBtn = $('#saveLentBorrowed'); if (saveLBBtn) saveLBBtn.addEventListener('click', withSpinner(saveLBBtn, async ()=>{
+const saveLBBtn = $('#saveLentBorrowed'); if (saveLBBtn) saveLBBtn.addEventListener('click', withSpinner(saveLBBtn, guardedGlobal(async ()=>{
   const row = { Name: $('#lbName').value, Amount: Number($('#lbAmount').value||0), Date: $('#lbDate').value, Type: $('#lbType').value, Notes: $('#lbNotes').value };
   if (editContext.mode === 'edit' && editContext.table === 'LentBorrowed'){
     await api.updateRow('LentBorrowed', editContext.row, row);
@@ -413,7 +411,7 @@ const saveLBBtn = $('#saveLentBorrowed'); if (saveLBBtn) saveLBBtn.addEventListe
   }
   await refreshAll(); closeModals(); resetLBForm(); showSuccess('Saved'); editContext = { mode: null, table: null, row: null };
   location.hash = 'lentborrowed-view'; navigateTo('lentborrowed-view'); const lbw = $('#lentBorrowedViewTable'); showLoading(lbw); await renderTable('LentBorrowed', '#lentBorrowedViewTable'); renderFilters('#lentBorrowedViewFilters','LentBorrowed');
-}));
+})));
 
 // View buttons also render filters
 const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.addEventListener('click', guardedGlobal(async (e)=> {
@@ -488,7 +486,7 @@ async function renderTable(table, wrapSelector){
   // delegate clicks for edit/delete so it still works after filtering
   let busy = false;
   wrap.onclick = async (e)=>{
-    if (busy) return; busy = true; try {
+    if (busy) return; busy = true; showGlobal(); try {
       const del = e.target.closest('[data-delete]');
       const ed = e.target.closest('[data-edit]');
       const settle = e.target.closest('[data-settle]');
@@ -512,7 +510,7 @@ async function renderTable(table, wrapSelector){
         const accountName = prompt('Settle to/from which account? Enter account name exactly as listed.'); if (!accountName) return;
         await api.settleLentBorrowed(row, accountName); await refreshAll(); await renderTable(table, wrapSelector); showSuccess('Settled');
       }
-    } finally { busy = false; }
+    } finally { hideGlobal(); busy = false; }
   };
 }
 
@@ -600,11 +598,12 @@ const sBase = document.getElementById('settingsBaseCurrency'); if (sBase) sBase.
 const sCats = document.getElementById('settingsCategories'); if (sCats) sCats.addEventListener('input', debounce(e => { try { state.settings.categories = JSON.parse(e.target.value); saveSettings(); } catch {} }, 600));
 const sAccTypes = document.getElementById('settingsAccountTypes'); if (sAccTypes) sAccTypes.addEventListener('input', e => { state.settings.accountTypes = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); saveSettings(); });
 
+function showGlobal(){ const overlay = document.getElementById('globalLoadingOverlay'); document.body.classList.add('global-loading'); if (overlay) overlay.classList.add('show'); }
+function hideGlobal(){ const overlay = document.getElementById('globalLoadingOverlay'); document.body.classList.remove('global-loading'); if (overlay) overlay.classList.remove('show'); }
 function guardedGlobal(fn){
   return async (...args)=>{
-    const overlay = document.getElementById('globalLoadingOverlay');
-    document.body.classList.add('global-loading'); if (overlay) overlay.classList.add('show');
-    try { return await fn(...args); } finally { document.body.classList.remove('global-loading'); if (overlay) overlay.classList.remove('show'); }
+    showGlobal();
+    try { return await fn(...args); } finally { hideGlobal(); }
   };
 }
 
@@ -623,7 +622,32 @@ const btnExportCSV = $('#btnExportCSV'); if (btnExportCSV) btnExportCSV.addEvent
 const btnExportXLSX = $('#btnExportXLSX'); if (btnExportXLSX) btnExportXLSX.addEventListener('click', guardedGlobal(async ()=>{
   const data = await api.exportBackup(); download(`backup-${Date.now()}.json`, JSON.stringify(data, null, 2));
 }));
-const btnSaveSettings = $('#btnSaveSettings'); if (btnSaveSettings) btnSaveSettings.addEventListener('click', async ()=>{ await saveSettings(); showSuccess('Settings saved'); await refreshAll(); });
+const btnSaveSettings = $('#btnSaveSettings'); if (btnSaveSettings) btnSaveSettings.addEventListener('click', guardedGlobal(async ()=>{
+  // Collect all settings from UI
+  const sl = document.getElementById('settingsLanguage'); if (sl) state.settings.language = sl.value;
+  const sc = document.getElementById('settingsCurrencySymbol'); if (sc) state.settings.currencySymbol = sc.value;
+  const sdf = document.getElementById('settingsDateFormat'); if (sdf) state.settings.dateFormat = sdf.value;
+  const snf = document.getElementById('settingsNumberFormat'); if (snf) state.settings.numberFormat = snf.value;
+  const sau = document.getElementById('settingsAutoSync'); if (sau) state.settings.autoSync = !!sau.checked;
+  const sn = document.getElementById('settingsNotifications'); if (sn) state.settings.notifications = !!sn.checked;
+  const smc = document.getElementById('settingsMultiCurrency'); if (smc) state.settings.multiCurrency = !!smc.checked;
+  const sbc = document.getElementById('settingsBaseCurrency'); if (sbc) state.settings.baseCurrency = sbc.value || 'USD';
+  const scat = document.getElementById('settingsCategories'); if (scat) { try { state.settings.categories = JSON.parse(scat.value||'{}'); } catch {} }
+  const sat = document.getElementById('settingsAccountTypes'); if (sat) state.settings.accountTypes = sat.value.split(',').map(s=>s.trim()).filter(Boolean);
+  const pc = document.getElementById('settingsPrimaryColor'); const ac = document.getElementById('settingsAccentColor'); if (pc && ac) state.settings.themeColors = { primary: pc.value, accent: ac.value };
+  const dr = document.getElementById('settingsDefaultRange'); if (dr) state.settings.defaultRange = dr.value || 'this_month';
+  const dt = document.getElementById('settingsDefaultTab'); if (dt) state.settings.defaultTab = dt.value || 'dashboard';
+  const bud = document.getElementById('settingsBudgets'); if (bud) { try { state.settings.budgets = JSON.parse(bud.value||'{}'); } catch {} }
+  const thr = document.getElementById('settingsThresholds'); if (thr) { try { state.settings.notificationThresholds = JSON.parse(thr.value||'{}'); } catch {} }
+  const ar = document.getElementById('settingsArchiveMonths'); if (ar) state.settings.archiveMonths = Number(ar.value||0);
+  const cards = Array.from(document.querySelectorAll('.chk-card')).filter(cb=>cb.checked).map(cb=>cb.value);
+  const charts = Array.from(document.querySelectorAll('.chk-chart')).filter(cb=>cb.checked).map(cb=>cb.value);
+  state.settings.dashboardPrefs = { cards, charts };
+  await saveSettings();
+  applySettingsToUI();
+  showSuccess('Settings saved');
+  await refreshAll();
+}));
 
 function bindActionButtons(){
   const addIncomeBtn = $('#btnAddIncome'); if (addIncomeBtn) addIncomeBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); openIncomeModal(); };
