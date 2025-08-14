@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Personal Tracker</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body class="theme-dark">
+  <div id="app">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">💎 <span data-i18n="app_title">Personal Tracker</span></div>
+      </div>
+      <nav class="menu">
+        <button class="menu-item active" data-route="dashboard" title="Dashboard"><i class="fa-solid fa-gauge"></i><span data-i18n="menu_dashboard">Dashboard</span></button>
+        <button class="menu-item" data-route="income" title="Income"><i class="fa-solid fa-arrow-trend-up"></i><span data-i18n="menu_income">Income</span></button>
+        <button class="menu-item" data-route="expense" title="Expense"><i class="fa-solid fa-arrow-trend-down"></i><span data-i18n="menu_expense">Expense</span></button>
+        <button class="menu-item" data-route="accounts" title="Accounts"><i class="fa-solid fa-wallet"></i><span data-i18n="menu_accounts">Accounts</span></button>
+        <button class="menu-item" data-route="transfer" title="Transfer"><i class="fa-solid fa-right-left"></i><span data-i18n="menu_transfer">Transfer</span></button>
+        <button class="menu-item" data-route="lentborrowed" title="Lent & Borrowed"><i class="fa-solid fa-hand-holding-dollar"></i><span data-i18n="menu_lent_borrowed">Lent & Borrowed</span></button>
+        <button class="menu-item" data-route="settings" title="Settings"><i class="fa-solid fa-gear"></i><span data-i18n="menu_settings">Settings</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        <button id="sidebarThemeToggle" class="icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <div class="signature">Designed by Avy</div>
+      </div>
+    </aside>
+    <div id="screenOverlay" class="screen-overlay"></div>
+
+    <main class="main">
+      <header class="topbar fixed">
+        <button id="btnSidebarToggle" class="icon-btn" aria-label="Toggle Sidebar"><i class="fa-solid fa-bars"></i></button>
+        <div class="app-head">
+          <div class="app-title animate-title">Income & Expense Tracker</div>
+          <div class="app-by signature">Designed by Avy</div>
+          <div class="app-subtitle" id="currentTabLabel">Dashboard</div>
+        </div>
+        <div class="topbar-actions"></div>
+      </header>
+
+      <section id="route-dashboard" class="route active">
+        <div class="cards">
+          <div class="card total animate-card"><div class="card-title"><i class="fa-solid fa-sack-dollar"></i> <span data-i18n="card_total_balance">Total Balance</span></div><div id="totalBalance" class="card-value">0</div></div>
+          <div class="card income animate-card"><div class="card-title"><i class="fa-solid fa-arrow-trend-up"></i> <span data-i18n="card_total_income">Total Income</span></div><div id="totalIncome" class="card-value">0</div></div>
+          <div class="card expense animate-card"><div class="card-title"><i class="fa-solid fa-arrow-trend-down"></i> <span data-i18n="card_total_expense">Total Expense</span></div><div id="totalExpense" class="card-value">0</div></div>
+          <div class="card cash animate-card"><div class="card-title"><i class="fa-solid fa-money-bill-wave"></i> <span data-i18n="card_cash_balance">Cash Balance</span></div><div id="cashBalance" class="card-value">0</div></div>
+          <div class="card credit animate-card"><div class="card-title"><i class="fa-solid fa-credit-card"></i> <span data-i18n="card_credit_balance">Credit Card Balance</span></div><div id="creditBalance" class="card-value">0</div></div>
+          <div class="card debit animate-card"><div class="card-title"><i class="fa-solid fa-id-card"></i> <span>Debit Card Balance</span></div><div id="debitBalance" class="card-value">0</div></div>
+        </div>
+        <div class="filters">
+          <button class="chip active" data-filter="this_month" data-i18n="filter_this_month">This Month</button>
+          <button class="chip" data-filter="last_month" data-i18n="filter_last_month">Last Month</button>
+          <button class="chip" data-filter="this_year" data-i18n="filter_this_year">This Year</button>
+        </div>
+        <div class="charts-grid">
+          <div id="chartLine" class="chart"></div>
+          <div id="chartBar" class="chart"></div>
+          <div id="chartPie" class="chart"></div>
+          <div id="chartDonut" class="chart"></div>
+          <div id="chartStacked" class="chart"></div>
+        </div>
+      </section>
+
+      <section id="route-income" class="route">
+        <div class="action-cards">
+          <button id="cardAddIncome" class="action-card primary"><i class="fa-solid fa-plus"></i><div>Add Income</div></button>
+          <button id="cardViewIncome" class="action-card"><i class="fa-solid fa-table"></i><div>View Income</div></button>
+        </div>
+      </section>
+
+      <section id="route-expense" class="route">
+        <div class="action-cards">
+          <button id="cardAddExpense" class="action-card danger"><i class="fa-solid fa-plus"></i><div>Add Expense</div></button>
+          <button id="cardViewExpense" class="action-card"><i class="fa-solid fa-table"></i><div>View Expense</div></button>
+        </div>
+      </section>
+
+      <section id="route-accounts" class="route">
+        <div class="action-cards">
+          <button id="cardAddAccount" class="action-card"><i class="fa-solid fa-plus"></i><div>Add Account</div></button>
+          <button id="cardViewAccounts" class="action-card"><i class="fa-solid fa-table"></i><div>View Accounts</div></button>
+        </div>
+        <div id="accountsCards" class="cards"></div>
+      </section>
+
+      <section id="route-lentborrowed" class="route">
+        <div class="action-cards">
+          <button id="cardAddLB" class="action-card"><i class="fa-solid fa-plus"></i><div>Add Lent/Borrowed</div></button>
+          <button id="cardViewLB" class="action-card"><i class="fa-solid fa-table"></i><div>View Lent/Borrowed</div></button>
+        </div>
+      </section>
+
+      <!-- View-only routes -->
+      <section id="route-income-view" class="route">
+        <div class="section-header"><h2>Income</h2></div>
+        <div id="incomeViewFilters" class="filters"></div>
+        <div id="incomeViewTable" class="table-wrap"></div>
+      </section>
+
+      <section id="route-expense-view" class="route">
+        <div class="section-header"><h2>Expense</h2></div>
+        <div id="expenseViewFilters" class="filters"></div>
+        <div id="expenseViewTable" class="table-wrap"></div>
+      </section>
+
+      <section id="route-lentborrowed-view" class="route">
+        <div class="section-header"><h2>Lent & Borrowed</h2></div>
+        <div id="lentBorrowedViewFilters" class="filters"></div>
+        <div id="lentBorrowedViewTable" class="table-wrap"></div>
+      </section>
+
+      <section id="route-accounts-view" class="route">
+        <div class="section-header"><h2>Accounts</h2></div>
+        <div id="accountsViewFilters" class="filters"></div>
+        <div id="accountsViewTable" class="table-wrap"></div>
+      </section>
+
+      <section id="route-transfer" class="route">
+        <div class="section-header">
+          <h2 data-i18n="menu_transfer">Transfer</h2>
+          
+        </div>
+        <div id="transferFormWrap" class="card" style="max-width: 720px;">
+          <div class="transfer-head">
+            <div class="transfer-title"><i class="fa-solid fa-right-left"></i> Transfer between accounts</div>
+          </div>
+          <div class="transfer-row">
+            <div class="field">
+              <label>From</label>
+              <select id="trFromSelect" class="select"></select>
+            </div>
+            <button id="btnSwapAccounts" class="icon-btn swap-btn" title="Swap">
+              <i class="fa-solid fa-right-left"></i>
+            </button>
+            <div class="field">
+              <label>To</label>
+              <select id="trToSelect" class="select"></select>
+            </div>
+          </div>
+          <div class="form-grid">
+            <input id="trAmountInline" type="number" step="0.01" class="input" placeholder="Amount" data-i18n-placeholder="placeholder_amount" />
+            <input id="trDateInline" type="date" class="input" />
+            <input id="trNotesInline" class="input" placeholder="Notes" data-i18n-placeholder="placeholder_notes" />
+            <div id="trCurrencyWrapInline" class="currency-wrap hidden">
+              <input id="trCurrencyInline" class="input" placeholder="Currency (e.g., USD)" />
+            </div>
+          </div>
+          <div style="margin-top: 10px; display: flex; gap: 8px;">
+            <button id="submitTransferInline" class="btn"><i class="fa-solid fa-paper-plane"></i> <span data-i18n="menu_transfer">Transfer</span></button>
+          </div>
+        </div>
+        <div id="transfersTableWrap" class="table-wrap hidden"></div>
+      </section>
+
+      <section id="route-settings" class="route">
+        <div class="section-header">
+          <h2 data-i18n="menu_settings">Settings</h2>
+        </div>
+        <div class="settings-grid">
+          <div class="setting">
+            <label data-i18n="settings_language">Language</label>
+            <select id="settingsLanguage" class="select">
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+              <option value="bn">বাংলা</option>
+              <option value="hi">हिन्दी</option>
+              <option value="ne">नेपाली</option>
+            </select>
+          </div>
+          <div class="setting">
+            <label data-i18n="settings_currency_symbol">Currency Symbol</label>
+            <input id="settingsCurrencySymbol" class="input" value="$" />
+          </div>
+          <div class="setting">
+            <label>Dashboard Cards</label>
+            <div><label><input type="checkbox" class="chk-card" value="total" checked /> Total</label>
+            <label><input type="checkbox" class="chk-card" value="income" checked /> Income</label>
+            <label><input type="checkbox" class="chk-card" value="expense" checked /> Expense</label>
+            <label><input type="checkbox" class="chk-card" value="cash" checked /> Cash</label>
+            <label><input type="checkbox" class="chk-card" value="credit" checked /> Credit</label>
+            <label><input type="checkbox" class="chk-card" value="debit" checked /> Debit</label></div>
+          </div>
+          <div class="setting">
+            <label>Dashboard Charts</label>
+            <div><label><input type="checkbox" class="chk-chart" value="line" checked /> Line</label>
+            <label><input type="checkbox" class="chk-chart" value="bar" checked /> Bar</label>
+            <label><input type="checkbox" class="chk-chart" value="pie" checked /> Pie</label>
+            <label><input type="checkbox" class="chk-chart" value="donut" checked /> Donut</label>
+            <label><input type="checkbox" class="chk-chart" value="stacked" checked /> Stacked</label></div>
+          </div>
+          <div class="setting">
+            <label>Theme Colors</label>
+            <input id="settingsPrimaryColor" type="color" class="input" value="#3a7bd5" /> Primary
+            <input id="settingsAccentColor" type="color" class="input" value="#00d2ff" /> Accent
+          </div>
+          <div class="setting">
+            <label>Default Range</label>
+            <select id="settingsDefaultRange" class="select">
+              <option value="this_month">This Month</option>
+              <option value="last_month">Last Month</option>
+              <option value="this_year">This Year</option>
+            </select>
+          </div>
+          <div class="setting">
+            <label>Default Tab</label>
+            <select id="settingsDefaultTab" class="select">
+              <option value="dashboard">Dashboard</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+              <option value="accounts">Accounts</option>
+              <option value="lentborrowed">Lent & Borrowed</option>
+              <option value="transfer">Transfer</option>
+            </select>
+          </div>
+          <div class="setting">
+            <label>Budgets (JSON)</label>
+            <textarea id="settingsBudgets" class="textarea" rows="3" placeholder='{"Food":200,"Transport":100}'></textarea>
+          </div>
+          <div class="setting">
+            <label>Notification Thresholds (JSON)</label>
+            <textarea id="settingsThresholds" class="textarea" rows="3" placeholder='{"AccountName":50}'></textarea>
+          </div>
+          <div class="setting">
+            <label>Archive After (months)</label>
+            <input id="settingsArchiveMonths" type="number" class="input" min="0" value="0" />
+          </div>
+          <div class="setting">
+            <label>Actions</label>
+            <button id="btnSaveSettings" class="btn primary"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="modalOverlay" class="modal-overlay hidden"></div>
+
+  <div id="modalIncome" class="modal hidden">
+    <div class="modal-header"><h3 data-i18n="income_add">Add Income</h3><button class="icon-btn modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <input id="incDate" type="date" class="input" />
+        <input id="incAmount" type="number" step="0.01" class="input" placeholder="Amount" data-i18n-placeholder="placeholder_amount" />
+        <select id="incCategorySelect" class="select"></select>
+        <select id="incAccountSelect" class="select"></select>
+        <input id="incNotes" class="input" placeholder="Notes" data-i18n-placeholder="placeholder_notes" />
+        <div id="incCurrencyWrap" class="currency-wrap hidden">
+          <input id="incCurrency" class="input" placeholder="Currency (e.g., USD)" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="saveIncome" class="btn primary"><i class="fa-solid fa-check"></i> <span data-i18n="btn_save">Save</span></button>
+    </div>
+  </div>
+
+  <div id="modalExpense" class="modal hidden">
+    <div class="modal-header"><h3 data-i18n="expense_add">Add Expense</h3><button class="icon-btn modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <input id="expDate" type="date" class="input" />
+        <input id="expAmount" type="number" step="0.01" class="input" placeholder="Amount" data-i18n-placeholder="placeholder_amount" />
+        <select id="expCategorySelect" class="select"></select>
+        <select id="expAccountSelect" class="select"></select>
+        <input id="expNotes" class="input" placeholder="Notes" data-i18n-placeholder="placeholder_notes" />
+        <div id="expCurrencyWrap" class="currency-wrap hidden">
+          <input id="expCurrency" class="input" placeholder="Currency (e.g., USD)" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="saveExpense" class="btn danger"><i class="fa-solid fa-check"></i> <span data-i18n="btn_save">Save</span></button>
+    </div>
+  </div>
+
+  <div id="modalAccount" class="modal hidden">
+    <div class="modal-header"><h3 data-i18n="account_add">Add Account</h3><button class="icon-btn modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <input id="accName" class="input" placeholder="Account Name" data-i18n-placeholder="placeholder_account_name" />
+        <select id="accType" class="select">
+          <option>Bank</option>
+          <option>Cash</option>
+          <option>Credit Card</option>
+          <option>Debit Card</option>
+        </select>
+        <input id="accInitialBalance" type="number" step="0.01" class="input" placeholder="Initial Balance" data-i18n-placeholder="placeholder_initial_balance" />
+        <input id="accCardNumber" class="input" placeholder="Card Number (optional)" />
+        <input id="accIssuer" class="input" placeholder="Issuer/Bank (optional)" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="saveAccount" class="btn"><i class="fa-solid fa-check"></i> <span data-i18n="btn_save">Save</span></button>
+    </div>
+  </div>
+
+  <div id="modalLentBorrowed" class="modal hidden">
+    <div class="modal-header"><h3 data-i18n="lent_borrowed_add">Add Lent/Borrowed</h3><button class="icon-btn modal-close"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <input id="lbName" class="input" placeholder="Name" />
+        <input id="lbAmount" type="number" step="0.01" class="input" placeholder="Amount" data-i18n-placeholder="placeholder_amount" />
+        <input id="lbDate" type="date" class="input" />
+        <select id="lbType" class="select">
+          <option value="Lent">Lent</option>
+          <option value="Borrowed">Borrowed</option>
+        </select>
+        <input id="lbNotes" class="input" placeholder="Notes" data-i18n-placeholder="placeholder_notes" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="saveLentBorrowed" class="btn"><i class="fa-solid fa-check"></i> <span data-i18n="btn_save">Save</span></button>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+  <div id="globalLoadingOverlay"><div class="box"><span class="spinner"></span><span class="text">Please wait...</span></div></div>
+</body>
+</html>
