@@ -193,6 +193,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacit
 
 .sidebar-footer { margin-top: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 .sidebar-footer .signature { font-weight: 700; letter-spacing: .6px; background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399, #fbbf24, #f472b6); -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 6s linear infinite; }
+.sidebar-footer .signature { font-family: 'Dancing Script', cursive; font-size: 20px; animation: shimmer 6s linear infinite, dance 4s ease-in-out infinite; }
 
 .only-mobile { display: none; }
 @media (max-width: 900px){ .only-mobile { display: inline-flex; } }
@@ -302,6 +303,8 @@ h1, h2, h3 { font-size: clamp(16px, 2vw, 22px); }
 
 /* Inline spinner */
 .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: var(--primary-2); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-left: 8px; }
+.btn.loading { position: relative; pointer-events: none; opacity: .8; }
+.btn.loading .spinner { margin-left: 8px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* Success alert */
@@ -315,7 +318,8 @@ h1, h2, h3 { font-size: clamp(16px, 2vw, 22px); }
 
 .app-head { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .app-title { font-weight: 800; letter-spacing: .4px; font-size: clamp(16px, 2.2vw, 20px); background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399, #fbbf24, #f472b6); -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 6s linear infinite; }
-.app-by { font-size: 11px; color: var(--text-dim); animation: hueShift 8s linear infinite; }
+.app-by { font-size: 11px; color: var(--text-dim); animation: hueShift 8s linear infinite, dance 6s ease-in-out infinite; }
 @keyframes hueShift { 0%{ filter: hue-rotate(0deg)} 100%{ filter: hue-rotate(360deg)} }
+@keyframes dance { 0%{ transform: translateY(0) rotate(0deg);} 25%{ transform: translateY(-1px) rotate(-1deg);} 50%{ transform: translateY(0) rotate(0deg);} 75%{ transform: translateY(1px) rotate(1deg);} 100%{ transform: translateY(0) rotate(0deg);} }
 .app-subtitle { font-size: 12px; color: var(--text-dim); }
 @keyframes fadePulse { 0%{ opacity: .6 } 50%{ opacity: 1 } 100%{ opacity: .6 } }

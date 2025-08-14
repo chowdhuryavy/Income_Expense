@@ -308,9 +308,10 @@ function withSpinner(btn, fn){
   return async ()=>{
     if (!btn) return fn();
     const original = btn.innerHTML;
+    btn.classList.add('loading');
     btn.innerHTML = original + ' <span class="spinner"></span>';
     btn.disabled = true;
-    try { await fn(); } finally { btn.disabled = false; btn.innerHTML = original; }
+    try { await fn(); } finally { btn.disabled = false; btn.classList.remove('loading'); btn.innerHTML = original; }
   };
 }
 
@@ -410,27 +411,36 @@ const saveLBBtn = $('#saveLentBorrowed'); if (saveLBBtn) saveLBBtn.addEventListe
 // View buttons also render filters
 const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.addEventListener('click', async (e)=> {
   e.stopPropagation();
-  location.hash = 'income';
-  navigateTo('income');
-  await renderTable('Income', '#incomeTableWrap');
-  renderFilters('#incomeFilters','Income');
-  showSuccess('Income loaded');
+  viewIncomeBtn.classList.add('loading'); viewIncomeBtn.innerHTML = '<i class="fa-solid fa-table"></i> Loading...'; viewIncomeBtn.disabled = true;
+  try {
+    location.hash = 'income';
+    navigateTo('income');
+    await renderTable('Income', '#incomeTableWrap');
+    renderFilters('#incomeFilters','Income');
+    showSuccess('Income loaded');
+  } finally { viewIncomeBtn.disabled = false; viewIncomeBtn.classList.remove('loading'); viewIncomeBtn.innerHTML = '<i class="fa-solid fa-table"></i> View Income'; }
 });
 const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.addEventListener('click', async (e)=> {
   e.stopPropagation();
-  location.hash = 'expense';
-  navigateTo('expense');
-  await renderTable('Expense', '#expenseTableWrap');
-  renderFilters('#expenseFilters','Expense');
-  showSuccess('Expense loaded');
+  viewExpenseBtn.classList.add('loading'); viewExpenseBtn.innerHTML = '<i class="fa-solid fa-table"></i> Loading...'; viewExpenseBtn.disabled = true;
+  try {
+    location.hash = 'expense';
+    navigateTo('expense');
+    await renderTable('Expense', '#expenseTableWrap');
+    renderFilters('#expenseFilters','Expense');
+    showSuccess('Expense loaded');
+  } finally { viewExpenseBtn.disabled = false; viewExpenseBtn.classList.remove('loading'); viewExpenseBtn.innerHTML = '<i class="fa-solid fa-table"></i> View Expense'; }
 });
 const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.addEventListener('click', async (e)=> {
   e.stopPropagation();
-  location.hash = 'lentborrowed';
-  navigateTo('lentborrowed');
-  await renderTable('LentBorrowed', '#lentBorrowedTableWrap');
-  renderFilters('#lentBorrowedFilters','LentBorrowed');
-  showSuccess('Lent/Borrowed loaded');
+  viewLBBtn.classList.add('loading'); viewLBBtn.innerHTML = '<i class="fa-solid fa-table"></i> Loading...'; viewLBBtn.disabled = true;
+  try {
+    location.hash = 'lentborrowed';
+    navigateTo('lentborrowed');
+    await renderTable('LentBorrowed', '#lentBorrowedTableWrap');
+    renderFilters('#lentBorrowedFilters','LentBorrowed');
+    showSuccess('Lent/Borrowed loaded');
+  } finally { viewLBBtn.disabled = false; viewLBBtn.classList.remove('loading'); viewLBBtn.innerHTML = '<i class="fa-solid fa-table"></i> View Lent/Borrowed'; }
 });
 
 async function renderTable(table, wrapSelector){
