@@ -169,6 +169,15 @@ canvas { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,25
 .select:focus, .input:focus, .textarea:focus { border-color: var(--primary-2); box-shadow: 0 0 0 2px rgba(0,210,255,0.15); }
 .textarea { resize: vertical; }
 
+/* Normalize control heights for consistent alignment */
+.input, .select { min-height: 42px; padding: 10px 12px; font-size: 14px; }
+input[type="date"].input, select.select, input[type="number"].input, input[type="text"].input { height: 42px; }
+.form-grid > * { width: 100%; }
+.field .select, .field .input { width: 100%; }
+
+/* Improve date picker visibility in dark theme */
+input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(.8); }
+
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 900; }
 .modal { position: fixed; left: 50%; top: 52%; transform: translate(-50%, -40%) scale(.96); width: min(520px, 92vw); background: var(--surface); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; box-shadow: var(--card-glow); opacity: 0; pointer-events: none; transition: transform .2s ease, opacity .2s ease; z-index: 1000; }
 .modal.show { opacity: 1; transform: translate(-50%, -52%) scale(1); pointer-events: all; }
