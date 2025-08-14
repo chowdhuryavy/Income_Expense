@@ -416,36 +416,27 @@ const saveLBBtn = $('#saveLentBorrowed'); if (saveLBBtn) saveLBBtn.addEventListe
 // View buttons also render filters
 const viewIncomeBtn = $('#btnViewIncome'); if (viewIncomeBtn) viewIncomeBtn.addEventListener('click', guardedGlobal(async (e)=> {
   e.stopPropagation();
-  viewIncomeBtn.classList.add('loading'); viewIncomeBtn.innerHTML = '<i class="fa-solid fa-table"></i> Loading...'; viewIncomeBtn.disabled = true;
-  try {
-    location.hash = 'income';
-    navigateTo('income');
-    await renderTable('Income', '#incomeTableWrap');
-    renderFilters('#incomeFilters','Income');
-    showSuccess('Income loaded');
-  } finally { viewIncomeBtn.disabled = false; viewIncomeBtn.classList.remove('loading'); viewIncomeBtn.innerHTML = '<i class="fa-solid fa-table"></i> View Income'; }
+  location.hash = 'income';
+  navigateTo('income');
+  await renderTable('Income', '#incomeTableWrap');
+  renderFilters('#incomeFilters','Income');
+  showSuccess('Income loaded');
 }));
 const viewExpenseBtn = $('#btnViewExpense'); if (viewExpenseBtn) viewExpenseBtn.addEventListener('click', guardedGlobal(async (e)=> {
   e.stopPropagation();
-  viewExpenseBtn.classList.add('loading'); viewExpenseBtn.innerHTML = '<i class="fa-solid fa-table"></i> Loading...'; viewExpenseBtn.disabled = true;
-  try {
-    location.hash = 'expense';
-    navigateTo('expense');
-    await renderTable('Expense', '#expenseTableWrap');
-    renderFilters('#expenseFilters','Expense');
-    showSuccess('Expense loaded');
-  } finally { viewExpenseBtn.disabled = false; viewExpenseBtn.classList.remove('loading'); viewExpenseBtn.innerHTML = '<i class="fa-solid fa-table"></i> View Expense'; }
+  location.hash = 'expense';
+  navigateTo('expense');
+  await renderTable('Expense', '#expenseTableWrap');
+  renderFilters('#expenseFilters','Expense');
+  showSuccess('Expense loaded');
 }));
 const viewLBBtn = $('#btnViewLentBorrowed'); if (viewLBBtn) viewLBBtn.addEventListener('click', guardedGlobal(async (e)=> {
   e.stopPropagation();
-  viewLBBtn.classList.add('loading'); viewLBBtn.innerHTML = '<i class="fa-solid fa-table"></i> Loading...'; viewLBBtn.disabled = true;
-  try {
-    location.hash = 'lentborrowed';
-    navigateTo('lentborrowed');
-    await renderTable('LentBorrowed', '#lentBorrowedTableWrap');
-    renderFilters('#lentBorrowedFilters','LentBorrowed');
-    showSuccess('Lent/Borrowed loaded');
-  } finally { viewLBBtn.disabled = false; viewLBBtn.classList.remove('loading'); viewLBBtn.innerHTML = '<i class="fa-solid fa-table"></i> View Lent/Borrowed'; }
+  location.hash = 'lentborrowed';
+  navigateTo('lentborrowed');
+  await renderTable('LentBorrowed', '#lentBorrowedTableWrap');
+  renderFilters('#lentBorrowedFilters','LentBorrowed');
+  showSuccess('Lent/Borrowed loaded');
 }));
 
 async function renderTable(table, wrapSelector){
@@ -459,7 +450,7 @@ async function renderTable(table, wrapSelector){
   try { data = await api.getTable(table); } catch (e){ console.error('Failed to load table', table, e); wrap.innerHTML = `<div style="padding:12px;">Failed to load ${table}</div>`; return; }
   const rows = data.rows || [];
   const headers = rows.length ? Object.keys(rows[0]).filter(h => h !== '_row') : [];
-  const toolbar = `<div class="table-toolbar"><button class="btn small" data-back><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button><button class="btn small" data-back-form style="margin-left:8px;"><i class="fa-solid fa-plus"></i> Add ${table}</button><div class="spacer"></div><div class="table-title">${table}</div></div>`;
+  const toolbar = `<div class="table-toolbar" style="position: sticky; top: 0; z-index: 1;"><div class="toolbar-left" style="display:flex; gap:8px;"><button class="btn small" data-back><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button><button class="btn small" data-back-form><i class="fa-solid fa-plus"></i> Add ${table}</button></div><div class="spacer"></div><div class="table-title">${table}</div></div>`;
   const html = `
     ${toolbar}
     <table class="table">
