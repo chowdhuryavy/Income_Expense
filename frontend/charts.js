@@ -14,7 +14,7 @@ function ensureApex(){
 }
 
 function colors(){
-  return ['#3a7bd5', '#00d2ff', '#16a34a', '#dc2626', '#f59e0b', '#a855f7'];
+  return ['#60a5fa', '#34d399', '#f59e0b', '#a78bfa', '#f472b6', '#ef4444'];
 }
 
 function themeMode(){ return document.body.classList.contains('theme-light') ? 'light' : 'dark'; }
@@ -28,6 +28,7 @@ export async function initCharts(){
     legend: { show: true },
     colors: colors(),
     theme: { mode: themeMode() },
+    fill: { type: 'gradient', gradient: { shade: 'dark', type: 'vertical', shadeIntensity: 0.25, gradientToColors: undefined, inverseColors: false, opacityFrom: 0.85, opacityTo: 0.55, stops: [0, 90, 100] } },
     noData: { text: 'No data', style: { color: getComputedStyle(document.body).getPropertyValue('--text').trim() } }
   };
   chLine = new ApexCharts(document.querySelector('#chartLine'), { ...optsBase, chart: { ...optsBase.chart, type: 'line', sparkline: { enabled: false } }, stroke: { width: 2 }, series: [{ name: 'Net', data: [] }], xaxis: { categories: [] } }); chLine.render();
