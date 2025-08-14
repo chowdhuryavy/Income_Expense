@@ -475,6 +475,31 @@ function computeAccountsTotal(){
   return (__stateRef.accounts || []).reduce((a, acc) => a + Number(acc.Balance || 0), 0);
 }
 
+async function refreshAll(){
+  try {
+    const data = await api.getAllData();
+    setAllData(data);
+    applySettingsToUI();
+    updateCards();
+    renderAccounts();
+    renderTransferInline();
+    if (Charts && Charts.refreshCharts) Charts.refreshCharts($('.chip.active')?.dataset.filter || state.settings.defaultRange || 'this_month');
+  } catch (e){
+    console.error('Failed to fetch data', e);
+    const dash = document.querySelector('#route-dashboard');
+    if (dash){
+      const id = 'api-error';
+      if (!document.getElementById(id)){
+        const div = document.createElement('div'); div.id = id;
+        div.style.cssText = 'margin:10px 0;padding:10px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,0,0,.1)';
+        div.innerHTML = 'Cannot reach backend. <button id="btnSetApiUrl" class="btn small" style="margin-left:8px;">Set API URL</button>';
+        dash.prepend(div);
+        const btn = div.querySelector('#btnSetApiUrl'); if (btn) btn.onclick = ()=>{ const url = prompt('Enter Web App URL (ends with /exec)'); if (url) { try { import('./api.js').then(m => m.setApiBaseUrl(url)); location.reload(); } catch {} } };
+      }
+    }
+  }
+}
+
 function applySettingsToUI(){
   const s = state.settings;
   document.body.classList.toggle('theme-light', s.theme === 'light');
@@ -513,10 +538,10 @@ async function saveSettings(){ await api.updateSettings(state.settings); }
 // Settings panel wiring
 const bDark = document.getElementById('settingsThemeDark'); if (bDark) bDark.addEventListener('click', ()=>{ if (document.body.classList.contains('theme-light')) toggleTheme(); });
 const bLight = document.getElementById('settingsThemeLight'); if (bLight) bLight.addEventListener('click', ()=>{ if (!document.body.classList.contains('theme-light')) toggleTheme(); });
-const sLang = document.getElementById('settingsLanguage'); if (sLang) sLang.addEventListener('change', e => setLanguage(e.target.value));
-const sCurr = document.getElementById('settingsCurrencySymbol'); if (sCurr) sCurr.addEventListener('input', e => { state.settings.currencySymbol = e.target.value; saveSettings(); });
-const sDateF = document.getElementById('settingsDateFormat'); if (sDateF) sDateF.addEventListener('change', e => { state.settings.dateFormat = e.target.value; saveSettings(); });
-const sNumF = document.getElementById('settingsNumberFormat'); if (sNumF) sNumF.addEventListener('change', e => { state.settings.numberFormat = e.target.value; saveSettings(); updateCards(); });
+const sLang = document.getElementById('settingsLanguage'); if (sLang) sLang.addEventListener('change', e => { setLanguage(e.target.value); showSuccess('Language updated'); });
+const sCurr = document.getElementById('settingsCurrencySymbol'); if (sCurr) sCurr.addEventListener('input', e => { state.settings.currencySymbol = e.target.value; saveSettings(); updateCards(); showSuccess('Currency updated'); });
+const sDateF = document.getElementById('settingsDateFormat'); if (sDateF) sDateF.addEventListener('change', e => { state.settings.dateFormat = e.target.value; saveSettings(); showSuccess('Date format updated'); });
+const sNumF = document.getElementById('settingsNumberFormat'); if (sNumF) sNumF.addEventListener('change', e => { state.settings.numberFormat = e.target.value; saveSettings(); updateCards(); showSuccess('Number format updated'); });
 const sAuto = document.getElementById('settingsAutoSync'); if (sAuto) sAuto.addEventListener('change', e => { state.settings.autoSync = e.target.checked; saveSettings(); });
 const sNotif = document.getElementById('settingsNotifications'); if (sNotif) sNotif.addEventListener('change', e => { state.settings.notifications = e.target.checked; saveSettings(); });
 const sMulti = document.getElementById('settingsMultiCurrency'); if (sMulti) sMulti.addEventListener('change', e => { state.settings.multiCurrency = e.target.checked; saveSettings(); });

@@ -46,19 +46,22 @@ body {
 .screen-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); backdrop-filter: blur(1px); opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 60; }
 .screen-overlay.show { opacity: 1; pointer-events: all; }
 
+/* Header sizing variable */
+:root { --header-h: 64px; }
+
 /* Layering */
 .sidebar { z-index: 70; }
 .topbar { z-index: 80; position: sticky; top: 0; }
-.topbar.fixed { position: fixed; top: 0; left: 0; right: 0; }
+.topbar.fixed { position: fixed; top: 0; left: 0; right: 0; height: var(--header-h); display: flex; align-items: center; }
 @media (min-width: 901px){
   .topbar.fixed { margin-left: 280px; width: calc(100% - 280px); }
 }
-body .main { padding-top: 60px; }
+body .main { padding-top: var(--header-h); }
 .main { position: relative; flex: 1; }
 
 /* Mobile sidebar behavior */
 @media (max-width: 900px){
-  .sidebar { position: fixed; left: 0; top: 60px; bottom: 0; height: calc(100vh - 60px); }
+  .sidebar { position: fixed; left: 0; top: var(--header-h); bottom: 0; height: calc(100vh - var(--header-h)); }
   body.sidebar-open .screen-overlay { opacity: 1; pointer-events: all; }
 }
 
