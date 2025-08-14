@@ -222,7 +222,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacit
 
 /* Mobile sidebar behavior */
 @media (max-width: 900px){
-  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; }
+  .sidebar { position: fixed; left: 0; top: var(--header-h); bottom: 0; height: calc(100vh - var(--header-h)); }
   body.sidebar-open .screen-overlay { opacity: 1; pointer-events: all; }
 }
 

@@ -249,17 +249,15 @@ function settleLentBorrowed(payload){
   const idxAmt = headers.indexOf('Amount');
   const idxType = headers.indexOf('Type');
   const idxStatus = headers.indexOf('Status');
-  const r = row+1; // data row index (header at 1)
+  const r = row+1; // data row index within 'data' (header at index 0)
   const currentStatus = data[r][idxStatus];
   if (String(currentStatus).toLowerCase() !== 'pending') return { ok: true, message: 'Already settled' };
   const type = data[r][idxType];
   const amount = Number(data[r][idxAmt]||0);
   if ((type||'').toLowerCase() === 'lent'){
-    // money comes back to account
     _updateAccountBalance(account, +amount);
     sh.getRange(r+1, idxStatus+1).setValue('Returned');
   } else {
-    // borrowed paid back: money leaves account
     _updateAccountBalance(account, -amount);
     sh.getRange(r+1, idxStatus+1).setValue('Paid back');
   }

@@ -96,6 +96,15 @@ const currSel = $('#currencySymbolSelect');
 
 function setLanguage(lang){ translatePage(lang); state.settings.language = lang; $('#settingsLanguage').value = lang; saveSettings(); }
 
+function toggleTheme(){
+  const nowLight = !document.body.classList.contains('theme-light');
+  document.body.classList.toggle('theme-light', nowLight);
+  document.body.classList.toggle('theme-dark', !nowLight);
+  state.settings.theme = nowLight ? 'light' : 'dark';
+  saveSettings();
+  if (Charts && Charts.refreshChartTheme) Charts.refreshChartTheme();
+}
+
 // Cards update
 function updateCards(){
   const { income, expense, cash, credit, debit } = totals();
@@ -564,6 +573,7 @@ const btnExportCSV = $('#btnExportCSV'); if (btnExportCSV) btnExportCSV.addEvent
 const btnExportXLSX = $('#btnExportXLSX'); if (btnExportXLSX) btnExportXLSX.addEventListener('click', async ()=>{
   const data = await api.exportBackup(); download(`backup-${Date.now()}.json`, JSON.stringify(data, null, 2));
 });
+const btnSaveSettings = $('#btnSaveSettings'); if (btnSaveSettings) btnSaveSettings.addEventListener('click', async ()=>{ await saveSettings(); showSuccess('Settings saved'); await refreshAll(); });
 
 function bindActionButtons(){
   const addIncomeBtn = $('#btnAddIncome'); if (addIncomeBtn) addIncomeBtn.onclick = (e)=>{ e.stopPropagation(); location.hash = 'income'; navigateTo('income'); openIncomeModal(); };
@@ -581,7 +591,7 @@ function bindActionCards(){
   const addExp = $('#cardAddExpense'); if (addExp) addExp.onclick = ()=> openExpenseModal();
   const viewExp = $('#cardViewExpense'); if (viewExp) viewExp.onclick = async ()=>{ location.hash = 'expense-view'; navigateTo('expense-view'); const wrap = $('#expenseViewTable'); showLoading(wrap); await renderTable('Expense', '#expenseViewTable'); renderFilters('#expenseViewFilters','Expense'); };
   const addAcc = $('#cardAddAccount'); if (addAcc) addAcc.onclick = ()=> openModal('#modalAccount');
-  const viewAcc = $('#cardViewAccounts'); if (viewAcc) viewAcc.onclick = async ()=>{ location.hash = 'accounts-view'; navigateTo('accounts-view'); renderAccountsTable && renderAccountsTable(); };
+  const viewAcc = $('#cardViewAccounts'); if (viewAcc) viewAcc.onclick = async ()=>{ location.hash = 'accounts-view'; navigateTo('accounts-view'); const wrap = $('#accountsViewTable'); showLoading(wrap); await renderTable('Accounts', '#accountsViewTable'); renderFilters('#accountsViewFilters','Accounts'); };
   const addLB = $('#cardAddLB'); if (addLB) addLB.onclick = ()=> openModal('#modalLentBorrowed');
   const viewLB = $('#cardViewLB'); if (viewLB) viewLB.onclick = async ()=>{ location.hash = 'lentborrowed-view'; navigateTo('lentborrowed-view'); const wrap = $('#lentBorrowedViewTable'); showLoading(wrap); await renderTable('LentBorrowed', '#lentBorrowedViewTable'); renderFilters('#lentBorrowedViewFilters','LentBorrowed'); };
 }
@@ -589,6 +599,12 @@ function bindActionCards(){
 // Start at dashboard and collapse sidebar
 window.addEventListener('DOMContentLoaded', async ()=>{
   if (Charts && Charts.initCharts) await Charts.initCharts();
+  // dashboard chips
+  document.querySelectorAll('#route-dashboard .chip').forEach(ch => ch.addEventListener('click', ()=>{
+    document.querySelectorAll('#route-dashboard .chip').forEach(c=>c.classList.remove('active'));
+    ch.classList.add('active');
+    if (Charts && Charts.refreshCharts) Charts.refreshCharts(ch.dataset.filter || 'this_month');
+  }));
   location.hash = 'dashboard'; navigateTo('dashboard'); updateTabLabel('dashboard'); setSidebarExpanded(false);
   bindActionButtons();
   bindActionCards();
