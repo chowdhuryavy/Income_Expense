@@ -17,9 +17,14 @@ const REQUIRED_HEADERS = {
   Settings: ['Key','Value']
 };
 
-function _ss(){ return SpreadsheetApp.openById(SPREADSHEET_ID); }
+// Memoized Spreadsheet handle
+var __SS = null;
+function _ss(){ if (__SS) return __SS; __SS = SpreadsheetApp.openById(SPREADSHEET_ID); return __SS; }
+function _cache(){ return CacheService.getScriptCache(); }
 
 function ensureSheetsAndHeaders(){
+  const props = PropertiesService.getScriptProperties();
+  if (props.getProperty('initialized') === 'true') return;
   const ss = _ss();
   Object.keys(SHEETS).forEach(key => {
     const name = SHEETS[key];
@@ -30,22 +35,30 @@ function ensureSheetsAndHeaders(){
     if (!headers.length) {
       sh.getRange(1,1,1,required.length).setValues([required]);
     } else {
-      // Add any missing headers to the end
       const missing = required.filter(h => !headers.includes(h));
-      if (missing.length){
-        sh.getRange(1, headers.length+1, 1, missing.length).setValues([missing]);
-      }
+      if (missing.length){ sh.getRange(1, headers.length+1, 1, missing.length).setValues([missing]); }
     }
   });
+  props.setProperty('initialized', 'true');
 }
 
 function doGet(e){
   try {
     ensureSheetsAndHeaders();
     const action = (e.parameter.action||'').trim();
+    const cache = _cache();
     if (action === 'ping') return _json({ ok: true, time: new Date().toISOString() });
-    if (action === 'getAllData') return _json(_getAll());
-    if (action === 'getTable') return _json({ rows: _readTableWithRow(e.parameter.table) });
+    if (action === 'getAllData'){
+      const k = 'getAllData'; const hit = cache.get(k);
+      if (hit) return _json(JSON.parse(hit));
+      const payload = _getAll(); cache.put(k, JSON.stringify(payload), 60); return _json(payload);
+    }
+    if (action === 'getTable'){
+      const table = e.parameter.table; const k = 'getTable:'+table; const hit = cache.get(k);
+      if (hit) return _json({ rows: JSON.parse(hit) });
+      const rows = _readTableWithRow(table);
+      cache.put(k, JSON.stringify(rows), 60); return _json({ rows });
+    }
     if (action === 'getSettings') return _json(_getSettings());
     if (action === 'exportBackup') return _json(_exportBackup());
     return _json({ error: 'Unknown action' });
@@ -54,22 +67,25 @@ function doGet(e){
   }
 }
 
+function _invalidateCaches(keys){ const c = _cache(); (keys||[]).forEach(k => c.remove(k)); }
+function _invalidateAllCachesFor(table){ const keys = ['getAllData']; if (table) keys.push('getTable:'+table); _invalidateCaches(keys); }
+
 function doPost(e){
   try {
     ensureSheetsAndHeaders();
     const action = (e.parameter.action||'').trim();
     const payload = e.parameter.payload ? JSON.parse(e.parameter.payload) : {};
-    if (action === 'addIncome') return _json(addIncome(payload));
-    if (action === 'addExpense') return _json(addExpense(payload));
-    if (action === 'addAccount') return _json(addAccount(payload));
-    if (action === 'addTransfer') return _json(addTransfer(payload));
-    if (action === 'addLentBorrowed') return _json(addLentBorrowed(payload));
-    if (action === 'settleLentBorrowed') return _json(settleLentBorrowed(payload));
-    if (action === 'updateSettings') return _json(updateSettings(payload));
-    if (action === 'resetData') return _json(resetData());
-    if (action === 'importCSV') return _json(importCSV(payload));
-    if (action === 'deleteRow') return _json(deleteRow(payload));
-    if (action === 'updateRow') return _json(updateRow(payload));
+    if (action === 'addIncome'){ const res = addIncome(payload); _invalidateAllCachesFor('Income'); _invalidateAllCachesFor('Accounts'); return _json(res); }
+    if (action === 'addExpense'){ const res = addExpense(payload); _invalidateAllCachesFor('Expense'); _invalidateAllCachesFor('Accounts'); return _json(res); }
+    if (action === 'addAccount'){ const res = addAccount(payload); _invalidateAllCachesFor('Accounts'); return _json(res); }
+    if (action === 'addTransfer'){ const res = addTransfer(payload); _invalidateAllCachesFor('Transfer'); _invalidateAllCachesFor('Accounts'); return _json(res); }
+    if (action === 'addLentBorrowed'){ const res = addLentBorrowed(payload); _invalidateAllCachesFor('LentBorrowed'); return _json(res); }
+    if (action === 'settleLentBorrowed'){ const res = settleLentBorrowed(payload); _invalidateAllCachesFor('LentBorrowed'); _invalidateAllCachesFor('Accounts'); return _json(res); }
+    if (action === 'updateSettings'){ const res = updateSettings(payload); _invalidateAllCachesFor(); return _json(res); }
+    if (action === 'resetData'){ const res = resetData(); _invalidateAllCachesFor(); return _json(res); }
+    if (action === 'importCSV'){ const res = importCSV(payload); _invalidateAllCachesFor(payload.targetTable); return _json(res); }
+    if (action === 'deleteRow'){ const res = deleteRow(payload); _invalidateAllCachesFor(payload.table); if (payload.table!=='Accounts') _invalidateAllCachesFor('Accounts'); return _json(res); }
+    if (action === 'updateRow'){ const res = updateRow(payload); _invalidateAllCachesFor(payload.table); if (payload.table!=='Accounts') _invalidateAllCachesFor('Accounts'); return _json(res); }
     return _json({ error: 'Unknown action' });
   } catch (err) {
     return _json({ error: err.message || String(err) });
